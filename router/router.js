@@ -150,7 +150,7 @@ const getRouterIps = async (db) => {
     macIpsList.map(macIp => {
         routers.map(router => {
             console.log(router, macIp);
-            if (router.mac === macIp.mac) {
+            if (router.mac.trim().toLowerCase() === macIp.mac.trim().toLowerCase()) {
                 routersIps.push({ id: router.id, name: router.name, mac: macIp.mac, ip: macIp.ip})
             }
         })
