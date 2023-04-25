@@ -91,7 +91,7 @@ const getDataFromRouter = async (ip) => {
 
 const saveDataFromRouter = async (data, db) => {
     await db.serialize(async () => {
-        console.log(`SAVING REPORTS TO DB`, data);
+        console.log(`SAVING REPORTS TO DB`);
         await Promise.all(
             data.map(plantReport => {
                 new Promise(function (resolve, reject) {
