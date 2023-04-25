@@ -15,7 +15,8 @@ const getPlants = async (db) => {
     return plantRows.map(row => ({
         id: row.id,
         name: row.name,
-        sensorMac: row.sensor_mac,
+        mac: row.mac,
+        routerMac: row.router_mac,
         potSize: row.pot_size,
         n: row.n,
         p: row.p,

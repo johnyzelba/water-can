@@ -1,20 +1,15 @@
-###Simple Express Server
+# Water can server
 
-The point of this simple express server is to allow front-end developers the ability to quickly serve test data via HTTP to the front-end.
+## Init DB
 
-Often writing mock data on the front-end can take up more time than needed. Also it is important to build your front-end with HTTP requests in mind - meaning it is better to structure your front-end with the HTTP frameworks and architecture you need right from the beginning instead of adding it later and replacing your mock data.
-
-This simple server will allow you to create your HTTP front-end architecture without having to write any "fake" code.
-
-###Installing & Running
-To install and run simply follow these steps:
-
-1)  Clone this repo
-
-2)  Open your terminal and run `node server.js`
-
-3)  Your server is now available at `http://localhost:6060/`
-
-4)  You can run a quick test by entering this in your browser: `http://localhost:6060/animals`
-
-5)  Build your test data right in the server.js file. Create new endpoints as needed
+### Create needed tables
+CRATE TABLE plants (id INTEGER PRIMARY KEY AUTOINCREMENT, name STRING NOT NULL, mac STRING NOT NULL, router_mac STRING NOT NULL, pot_size INTEGER NOT NULL, n INTEGER NOT NULL, p INTEGER NOT NULL, k INTEGER NOT NULL, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP);<br />
+CRATE TABLE plant_reports (id INTEGER PRIMARY KEY AUTOINCREMENT, plantId INTEGER SECONDARY KEY NOT NULL, soil_moisture INTEGER NOT NULL, temperture INTEGER NOT NULL, light INTEGER NOT NULL, conductivity INTEGER NOT NULL, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP);<br />
+CRATE TABLE tasks (id INTEGER PRIMARY KEY AUTOINCREMENT, plantId INTEGER SECONDARY KEY NOT NULL, status STRING NOT NULL, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP);<br />
+CRATE TABLE routers (id INTEGER PRIMARY KEY AUTOINCREMENT, name STRING NOT NULL, mac STRING NOT NULL, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP);<br />
+<br /><br />
+### Add mock data (for testing)
+INSERT INTO plants (name, mac, router_mac, pot_size, n, p, k) VALUES ('Mock Plant 1', '', 'B8:27:EB:B4:E7:BF', '5', 2, 2, 2);<br />
+INSERT INTO plants (name, mac, router_mac, pot_size, n, p, k) VALUES ('Mock Plant 2', '', 'B8:27:EB:B4:E7:BF', '3', 10, 10, 10);<br />
+INSERT INTO plants (name, mac, router_mac, pot_size, n, p, k) VALUES ('Mock Plant 3', '', 'B8:27:EB:B4:E7:BF', '5', 5, 8, 7);<br />
+INSERT INTO routers (name, mac) VALUES ('pi zero 1', '', 'B8:27:EB:B4:E7:BF', '5');<br />

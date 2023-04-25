@@ -96,13 +96,13 @@ const saveDataFromRouter = async (data, db) => {
             await Promise.all(
                 data.map(plantReport => {
                     new Promise(function (resolve, reject) {
-                        if (!plantReport.plantId || !plantReport.temperture || !plantReport.soilMoisture) {
+                        if (!plantReport.plantId || !plantReport.temperture || !plantReport.soilMoisture || !plantReport.light || !plantReport.conductivity) {
                             var error = new Error('Missing information');
                             throw error;
                         }
                         db.each(
-                            `INSERT INTO plant_reports (plant_id, temperture, soil_moisture, timestamp)
-                                                VALUES (${plantReport.plantId}, ${plantReport.temperture}, ${plantReport.soilMoisture}, CURRENT_TIMESTAMP)`,
+                            `INSERT INTO plant_reports (plant_id, temperture, moisture, light, soil_conductivity, timestamp)
+                            VALUES (${plantReport.plantId}, ${plantReport.temperture}, ${plantReport.soilMoisture}, ${plantReport.light}, ${plantReport.soilConductivity}, CURRENT_TIMESTAMP)`,
                             (err, rows) => {
                                 if (err) {
                                     console.log(err);
