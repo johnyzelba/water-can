@@ -83,6 +83,7 @@ const generateTasks = async (db, plantReports) => {
     );
 };
 
+
 const generateTasksIfNeeded = async (db, reportsFromProps) => {
     try {
         await db.serialize(async () => {
