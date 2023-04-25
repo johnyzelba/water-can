@@ -12,7 +12,7 @@ const { generateTasksIfNeeded } = require("./tasks/tasks");
 
 path.resolve(__dirname, '../../../dev.sqlite3')
 
-const db = new sqlite3.Database('/home/debian/simple-express-server/WaterCan.db', (err) => {
+const db = new sqlite3.Database('/home/debian/water-can/WaterCan.db', (err) => {
     if (err) {
         return console.error(err.message);
     }
