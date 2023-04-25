@@ -90,39 +90,42 @@ const getDataFromRouter = async (ip) => {
 };
 
 const saveDataFromRouter = async (data, db) => {
-    try {
-        await db.serialize(async () => {
-            console.log(`SAVING REPORTS TO DB`);
-            await Promise.all(
-                data.map(plantReport => {
-                    new Promise(function (resolve, reject) {
-                        if (!plantReport.plantId || !plantReport.temperture || !plantReport.soilMoisture || !plantReport.light || !plantReport.soilConductivity) {
-                            var error = new Error('Missing information');
-                            db.runAsync('ROLLBACK').then(() => reject(error));
-                        }
-                        db.each(
-                            `INSERT INTO plant_reports (plant_id, temperture, moisture, light, soil_conductivity, timestamp)
-                            VALUES (${plantReport.plantId}, ${plantReport.temperture}, ${plantReport.soilMoisture}, ${plantReport.light}, ${plantReport.soilConductivity}, CURRENT_TIMESTAMP)`,
-                            (error, rows) => {
-                                if (error) {
-                                    console.log(error);
-                                    db.runAsync('ROLLBACK').then(() => reject(error));
-                                }
-                                console.log(`SAVED SUCCESSFULLY`);
-                                resolve(rows);
+    await db.serialize(async () => {
+        console.log(`SAVING REPORTS TO DB`, data);
+        await Promise.all(
+            data.map(plantReport => {
+                new Promise(function (resolve, reject) {
+                    if (!plantReport.plantId || !plantReport.temperture || !plantReport.soilMoisture || !plantReport.light || !plantReport.soilConductivity) {
+                        var error = new Error('Missing information');
+                        db.runAsync('ROLLBACK').then(() => reject(error));
+                    }
+                    db.each(
+                        `INSERT INTO plant_reports (plant_id, temperture, moisture, light, soil_conductivity, timestamp)
+       
+                        VALUES (${plantReport.plantId}, ${plantReport.temperture}, ${plantReport.soilMoisture}, ${plantReport.light}, ${plantReport.soilConductivity}, CURRENT_TIMESTAMP)`,
+                        (error, rows) => {
+                            if (error) {
+                                console.log(error);
+                                db.runAsync('ROLLBACK').then(() => reject(error));
                             }
-                        );
-                    })
+                            console.log(`SAVED SUCCESSFULLY`);
+                            resolve(rows);
+                        }
+                    );
                 })
-            )
+            })
+        )
+        .then(function (arrayOfValuesOrErrors) {
+            const errorFlag = false;
+            arrayOfValuesOrErrors.map(valueOrError => valueOrError.error ? errorFlag=true : {});
+            return errorFlag;
+        })
+        .catch(function (err) {
+            return false;
         });
-    }
-    catch (e) {
-        console.log(e);
+    }).catch(function (err) {
         return false;
-    }
-
-    return true;
+    });
 };
 
 const getDataFromRouterAndSave = async (db, routersWithIp) => {
