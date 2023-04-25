@@ -138,7 +138,7 @@ const getDataFromRouterAndSave = async (db, routersWithIp) => {
 
     await endTransaction(db);
 
-    return response.data;
+    return isSaved ? response.data : false;
 };
 
 const getRouterIps = async (db) => {
@@ -149,7 +149,6 @@ const getRouterIps = async (db) => {
 
     macIpsList.map(macIp => {
         routers.map(router => {
-            console.log(router, macIp);
             if (router.mac.trim().toLowerCase() === macIp.mac.trim().toLowerCase()) {
                 routersIps.push({ id: router.id, name: router.name, mac: macIp.mac, ip: macIp.ip})
             }

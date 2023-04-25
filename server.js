@@ -63,7 +63,9 @@ app.get('/ingredients', async function (req, res) {
     try {
         const routersWithIp = await getRouterIps(db);
         const newPlantReports = await getDataFromRouterAndSave(db, routersWithIp);
-        await generateTasksIfNeeded(db, newPlantReports);
+        if (newPlantReports) {
+            await generateTasksIfNeeded(db, newPlantReports);
+        }
         res.send({})
     } catch (error) {
         res.send({ 'ok': false, 'msg': error });
