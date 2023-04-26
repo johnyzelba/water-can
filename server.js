@@ -72,6 +72,7 @@ app.get('/plants', async function (req, res) {
         await endTransaction(db);
         res.send({})
     } catch (error) {
+        await endTransaction(db);
         res.send({ 'ok': false, 'msg': error });
     }
 });
