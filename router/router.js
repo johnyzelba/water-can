@@ -1,8 +1,9 @@
 const axios = require('axios/dist/node/axios.cjs');
 const Evilscan = require('evilscan');
-const{ toMAC } = require('@network-utils/arp-lookup');
+const { toMAC } = require('@network-utils/arp-lookup');
 
 const { startTransaction, endTransaction } = require('../utils/transactions');
+const { getPlants } = require('../utils/plants');
 
 const getRouters = async (db) => {
     console.log(`GETTING ROUTERS FROM DB`);
@@ -28,18 +29,18 @@ const getRouters = async (db) => {
 const scanIps = async () => {
     const list = [];
     const options = {
-        target:'192.168.1.1-189.168.255.255',
-        port:'6069',
-        status:'O', // Timeout, Refused, Open, Unreachable
-        banner:true
+        target: '192.168.1.1-189.168.255.255',
+        port: '6069',
+        status: 'O', // Timeout, Refused, Open, Unreachable
+        banner: true
     };
     console.log(`SCANNING FOR IP ADDRESSES`);
     try {
         return new Promise(function (resolve, reject) {
             const evilscan = new Evilscan(options);
-            
-            
-            evilscan.on('result',data => {
+
+
+            evilscan.on('result', data => {
                 // fired when item is matching options
                 list.push(data);
             });
@@ -66,7 +67,7 @@ const getMacByIps = async (ipList) => {
         const macAddrsPromises = ipList.map(ipObj => toMAC(ipObj.ip));
         const macAddrs = await Promise.all(macAddrsPromises);
         const filteredMacIpsAddrs = ipList
-            .map((ipObj, index) => ({ ip: ipObj.ip, mac: macAddrs[index]}))
+            .map((ipObj, index) => ({ ip: ipObj.ip, mac: macAddrs[index] }))
             .filter(obj => !!obj.mac);
         console.log(`FOUND ${filteredMacIpsAddrs.length} MAC ADDRESSES`);
         return filteredMacIpsAddrs;
@@ -115,14 +116,14 @@ const saveDataFromRouter = async (data, db) => {
                 })
             })
         )
-        .then(function (arrayOfValuesOrErrors) {
-            const errorFlag = false;
-            arrayOfValuesOrErrors.map(valueOrError => valueOrError.error ? errorFlag=true : {});
-            return errorFlag;
-        })
-        .catch(function (err) {
-            return false;
-        });
+            .then(function (arrayOfValuesOrErrors) {
+                const errorFlag = false;
+                arrayOfValuesOrErrors.map(valueOrError => valueOrError.error ? errorFlag = true : {});
+                return errorFlag;
+            })
+            .catch(function (err) {
+                return false;
+            });
     }).catch(function (err) {
         return false;
     });
@@ -130,14 +131,22 @@ const saveDataFromRouter = async (data, db) => {
 
 const getDataFromRouterAndSave = async (db, routersWithIp) => {
     await startTransaction(db);
+    const plants = await getPlants(db);
     const promises = routersWithIp.map(routerWithIp => getDataFromRouter(routerWithIp.ip));
-    const reponses = await Promise.all(promises);
+    const responses = await Promise.all(promises);
     //TODO: apply for rest of array
-    const response = reponses[0];
+    const response = responses[0];
     if (response.error) {
         throw response.error;
     }
-    const isSaved = await saveDataFromRouter(response.data, db);
+    const dataToSave = response.data.map(dataElement => {
+        const plantId = plants.filter(plant => plant.mac === dataElement.deviceId)[0].id
+        return ({
+            ...dataElement,
+            plantId
+        })
+    })
+    const isSaved = await saveDataFromRouter(dataToSave, db);
 
     await endTransaction(db);
 
@@ -153,7 +162,7 @@ const getRouterIps = async (db) => {
     macIpsList.map(macIp => {
         routers.map(router => {
             if (router.mac.trim().toLowerCase() === macIp.mac.trim().toLowerCase()) {
-                routersIps.push({ id: router.id, name: router.name, mac: macIp.mac, ip: macIp.ip})
+                routersIps.push({ id: router.id, name: router.name, mac: macIp.mac, ip: macIp.ip })
             }
         })
     });
