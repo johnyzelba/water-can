@@ -63,7 +63,7 @@ const getLatestPlantsReports = async (db, plants) => {
 
 const generateTasks = async (db, plantReports) => {
     console.log(`SAVING NEW TASKS TO DB`);
-    await Promise.all(
+    const res = await Promise.all(
         plantReports.map(async plantReport =>
             new Promise(function (resolve, reject) {
                 db.all(
@@ -75,13 +75,13 @@ const generateTasks = async (db, plantReports) => {
                             db.all('ROLLBACK'); 
                             reject(err);
                         }
-                        console.log(`${rows.length} NEW TASKS CREATED`);
                         resolve("SUCCESS");
                     }
                 )
             })
         )
     );
+    console.log(`${res.length || "NO"} NEW TASKS CREATED`);
 };
 
 
