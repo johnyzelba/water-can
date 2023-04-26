@@ -125,7 +125,7 @@ const saveDataFromRouter = async (data, db) => {
         )
             .then(function (arrayOfValuesOrErrors) {
                 const errorFlag = false;
-                arrayOfValuesOrErrors.map(valueOrError => valueOrError.error ? errorFlag = true : {});
+                arrayOfValuesOrErrors.map(valueOrError => (valueOrError && valueOrError.error) ? errorFlag = true : {});
                 return errorFlag;
             })
             .catch(function (err) {
