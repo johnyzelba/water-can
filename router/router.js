@@ -140,7 +140,8 @@ const getDataFromRouterAndSave = async (db, routersWithIp) => {
         throw response.error;
     }
     const dataToSave = response.data.map(dataElement => {
-        const plantId = plants.filter(plant => plant.mac === dataElement.deviceId)[0].id
+        const plantId = plants.filter(plant => plant.mac === dataElement.deviceId)[0].id;
+        console.log("---------- ", plantId, " ----- ", plant.mac)
         return ({
             ...dataElement,
             plantId
