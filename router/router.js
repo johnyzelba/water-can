@@ -95,7 +95,9 @@ const saveDataFromRouter = async (data, db) => {
         console.log(`SAVING REPORTS TO DB`);
         await Promise.all(
             data.map(plantReport => {
+                console.log("-----1");
                 new Promise(function (resolve, reject) {
+                    console.log("-----2");
                     if (
                         plantReport.plantId === undefined 
                         || plantReport.temperture === undefined 
@@ -104,18 +106,21 @@ const saveDataFromRouter = async (data, db) => {
                         || plantReport.soilConductivity === undefined
                         ) {
                         var error = new Error('Missing information');
-                        console.log(error)
+                        console.log(error);
                         db.each('ROLLBACK');
                         reject(error);
                     }
+                    console.log("-----3");
                     db.each(
                         `INSERT INTO plant_reports (plant_id, temperture, soil_moisture, light, conductivity, timestamp)
        
                         VALUES (${plantReport.plantId}, ${plantReport.temperture}, ${plantReport.soilMoisture}, ${plantReport.light}, ${plantReport.soilConductivity}, CURRENT_TIMESTAMP)`,
                         (error, rows) => {
+                            console.log("-----4");
                             if (error) {
                                 console.log(error);
-                                db.each('ROLLBACK').then(() => reject(error));
+                                db.each('ROLLBACK')
+                                reject(error);
                             }
                             console.log(`SAVED SUCCESSFULLY`);
                             resolve(rows);
