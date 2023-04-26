@@ -66,7 +66,7 @@ app.get('/plants', async function (req, res) {
         const routersWithIp = await getRouterIps(db);
         const newPlantReports = await getDataFromRouterAndSave(db, routersWithIp);
         console.log("-------------", newPlantReports);
-        if (newPlantReports) {
+        if (newPlantReports && newPlantReports.length) {
             await generateTasksIfNeeded(db, newPlantReports);
         }
         await endTransaction(db);
