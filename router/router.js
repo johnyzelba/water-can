@@ -104,6 +104,7 @@ const saveDataFromRouter = async (data, db) => {
                         || plantReport.soilConductivity === undefined
                         ) {
                         var error = new Error('Missing information');
+                        console.log(error)
                         db.each('ROLLBACK');
                         reject(error);
                     }
