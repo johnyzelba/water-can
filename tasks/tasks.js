@@ -75,7 +75,7 @@ const generateTasks = async (db, plantReports) => {
                             db.all('ROLLBACK'); 
                             reject(err);
                         }
-                        console.log(`${rows.length || "NO"} NEW TASKS CREATED`);
+                        console.log(`${rows.length} NEW TASKS CREATED`);
                         resolve("SUCCESS");
                     }
                 )
