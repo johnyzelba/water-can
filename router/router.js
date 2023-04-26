@@ -129,13 +129,7 @@ const saveDataFromRouter = async (data, db) => {
                         );
                     })
                 })
-            )).catch(function (err) {
-                console.log(err);
-                return false;
-            });
-        }).catch(function (err) {
-            console.log(err);
-            return false;
+            ));
         });
     });
 };
