@@ -72,7 +72,7 @@ const generateTasks = async (db, plantReports) => {
                     VALUES (${plantReport.plantId}, "PENDING", CURRENT_TIMESTAMP)`,
                     (err, rows) => {
                         if (err) {
-                            db.runAsync('ROLLBACK').then(() => reject(err));
+                            db.each('ROLLBACK').then(() => reject(err));
                         }
                         console.log(`${rows.length || "NO"} NEW TASKS CREATED`);
                         resolve("SUCCESS");
