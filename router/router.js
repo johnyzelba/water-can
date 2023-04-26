@@ -91,56 +91,52 @@ const getDataFromRouter = async (ip) => {
 };
 
 const saveDataFromRouter = async (data, db) => {
-    await db.serialize(async () => {
-        console.log(`SAVING REPORTS TO DB`);
-        await Promise.all(
-            data.map(plantReport => {
-                console.log("-----1");
-                new Promise(function (resolve, reject) {
-                    console.log("-----2");
-                    if (
-                        plantReport.plantId === undefined 
-                        || plantReport.temperture === undefined 
-                        || plantReport.soilMoisture === undefined 
-                        || plantReport.light === undefined 
-                        || plantReport.soilConductivity === undefined
+    return await new Promise(async function (resolve, reject) {
+        await db.serialize(async () => {
+            console.log(`SAVING REPORTS TO DB`);
+            return resolve(await Promise.all(
+                data.map(plantReport => {
+                    console.log("-----1");
+                    new Promise(function (resolve, reject) {
+                        console.log("-----2");
+                        if (
+                            plantReport.plantId === undefined
+                            || plantReport.temperture === undefined
+                            || plantReport.soilMoisture === undefined
+                            || plantReport.light === undefined
+                            || plantReport.soilConductivity === undefined
                         ) {
-                        var error = new Error('Missing information');
-                        console.log(error);
-                        db.all('ROLLBACK');
-                        reject(error);
-                    }
-                    console.log("-----3");
-                    db.all(
-                        `INSERT INTO plant_reports (plant_id, temperture, soil_moisture, light, conductivity, timestamp)
+                            var error = new Error('Missing information');
+                            console.log(error);
+                            db.all('ROLLBACK');
+                            reject(error);
+                        }
+                        console.log("-----3");
+                        db.all(
+                            `INSERT INTO plant_reports (plant_id, temperture, soil_moisture, light, conductivity, timestamp)
        
                         VALUES (${plantReport.plantId}, ${plantReport.temperture}, ${plantReport.soilMoisture}, ${plantReport.light}, ${plantReport.soilConductivity}, CURRENT_TIMESTAMP)`,
-                        (error, rows) => {
-                            console.log("-----4");
-                            if (error) {
-                                console.log(error);
-                                db.all('ROLLBACK');
-                                reject(error);
+                            (error, rows) => {
+                                console.log("-----4");
+                                if (error) {
+                                    console.log(error);
+                                    db.all('ROLLBACK');
+                                    reject(error);
+                                }
+                                console.log(`SAVED SUCCESSFULLY`);
+                                resolve(rows);
                             }
-                            console.log(`SAVED SUCCESSFULLY`);
-                            resolve(rows);
-                        }
-                    );
+                        );
+                    })
                 })
-            })
-        )
-            .then(function (arrayOfValuesOrErrors) {
-                const errorFlag = false;
-                arrayOfValuesOrErrors.map(valueOrError => (valueOrError && valueOrError.error) ? errorFlag = true : {});
-                return errorFlag;
-            })
-            .catch(function (err) {
+            )).catch(function (err) {
                 console.log(err);
                 return false;
             });
-    }).catch(function (err) {
-        console.log(err);
-        return false;
+        }).catch(function (err) {
+            console.log(err);
+            return false;
+        });
     });
 };
 
@@ -150,7 +146,7 @@ const getDataFromRouterAndSave = async (db, routersWithIp) => {
     const responses = await Promise.all(promises);
     //TODO: apply for rest of array
     const response = responses[0];
-    
+
     if (response.error) {
         throw response.error;
     }
