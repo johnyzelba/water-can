@@ -9,7 +9,7 @@ const path = require('path');
 
 const { getDataFromRouterAndSave, getRouterIps } = require("./router/router");
 const { generateTasksIfNeeded } = require("./tasks/tasks");
-const { startTransaction, endTransaction } = require('../utils/transactions');
+const { startTransaction, endTransaction } = require('./utils/transactions');
 
 path.resolve(__dirname, '../../../dev.sqlite3')
 
