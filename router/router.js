@@ -157,7 +157,7 @@ const getDataFromRouterAndSave = async (db, routersWithIp) => {
     })
     const isSaved = await saveDataFromRouter(dataToSave, db);
 
-    return isSaved ? response.data : false;
+    return isSaved ? dataToSave : false;
 };
 
 const getRouterIps = async (db) => {
