@@ -96,7 +96,13 @@ const saveDataFromRouter = async (data, db) => {
         await Promise.all(
             data.map(plantReport => {
                 new Promise(function (resolve, reject) {
-                    if (!plantReport.plantId || !plantReport.temperture || !plantReport.soilMoisture || !plantReport.light || !plantReport.soilConductivity) {
+                    if (
+                        plantReport.plantId === undefined 
+                        || plantReport.temperture === undefined 
+                        || plantReport.soilMoisture === undefined 
+                        || plantReport.light === undefined 
+                        || plantReport.soilConductivity === undefined
+                        ) {
                         var error = new Error('Missing information');
                         db.each('ROLLBACK');
                         reject(error);
