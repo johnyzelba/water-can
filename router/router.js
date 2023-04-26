@@ -79,7 +79,7 @@ const getMacByIps = async (ipList) => {
 const getDataFromRouter = async (ip) => {
     try {
         console.log(`GETTING REPORTS FROM ROUTER`);
-        const response = await axios.get(`http://${ip}:6069/ingredients`);
+        const response = await axios.get(`http://${ip}:6069/plants`);
         if (response.data) {
             console.log(`RECIVED ${response.data.length} REPORTS`);
         }

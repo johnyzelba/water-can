@@ -59,7 +59,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 //     console.log("-------------");
 // });
 
-app.get('/ingredients', async function (req, res) {
+app.get('/plants', async function (req, res) {
     try {
         const routersWithIp = await getRouterIps(db);
         const newPlantReports = await getDataFromRouterAndSave(db, routersWithIp);
