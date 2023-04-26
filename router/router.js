@@ -158,7 +158,7 @@ const getDataFromRouterAndSave = async (db, routersWithIp) => {
     const dataToSave = response.data.map(dataElement => {
         const plantId = plants.filter(plant => plant.mac === dataElement.deviceId)[0].id;
         return ({
-            temperture: dataElement.temperture,
+            temperture: 1,
             soilMoisture: dataElement.soilMoisture,
             soilConductivity: dataElement.soilConductivity,
             light: dataElement.light,
