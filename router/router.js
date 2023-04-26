@@ -166,8 +166,20 @@ const getDataFromRouterAndSave = async (db, routersWithIp) => {
 
 const getRouterIps = async (db) => {
     const ipScanRes = await scanIps();
+    if (ipScanRes && !ipScanRes.length) {
+        return false;
+    }
+
     const macIpsList = await getMacByIps(ipScanRes);
+    if (macIpsList && !macIpsList.length) {
+        return false;
+    }
+
     const routers = await getRouters(db);
+    if (routers && !routers.length) {
+        return false;
+    }
+
     const routersIps = []
 
     macIpsList.map(macIp => {

@@ -64,6 +64,9 @@ app.get('/plants', async function (req, res) {
     try {
         await startTransaction(db);
         const routersWithIp = await getRouterIps(db);
+        if (!routersWithIp) {
+            throw "No ips or routers";
+        }
         const newPlantReports = await getDataFromRouterAndSave(db, routersWithIp);
         console.log("-------------", newPlantReports);
         if (newPlantReports && newPlantReports.length) {
