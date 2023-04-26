@@ -111,7 +111,7 @@ const saveDataFromRouter = async (data, db) => {
                         reject(error);
                     }
                     console.log("-----3");
-                    db.each(
+                    db.all(
                         `INSERT INTO plant_reports (plant_id, temperture, soil_moisture, light, conductivity, timestamp)
        
                         VALUES (${plantReport.plantId}, ${plantReport.temperture}, ${plantReport.soilMoisture}, ${plantReport.light}, ${plantReport.soilConductivity}, CURRENT_TIMESTAMP)`,
@@ -158,7 +158,7 @@ const getDataFromRouterAndSave = async (db, routersWithIp) => {
     const dataToSave = response.data.map(dataElement => {
         const plantId = plants.filter(plant => plant.mac === dataElement.deviceId)[0].id;
         return ({
-            temperture: 1,
+            temperture: dataElement.temperture,
             soilMoisture: dataElement.soilMoisture,
             soilConductivity: dataElement.soilConductivity,
             light: dataElement.light,
