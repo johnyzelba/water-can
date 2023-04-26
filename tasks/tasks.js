@@ -3,8 +3,9 @@ const { getPlants } = require('../utils/plants');
 const getPendingAndInProgressTasks = async (db, plantReports) => {
     console.log(`GETTING PENDING AND IN_PROGRESS TASKS FROM DB`);
     const tasksInProgressRows = (await Promise.all(
-        plantReports.map(async plantReport =>
-            new Promise(function (resolve, reject) {
+        plantReports.map(async plantReport => {
+            console.log("----------", plantReport);
+            return new Promise(function (resolve, reject) {
                 db.all(
                     `SELECT * FROM tasks 
                     WHERE plant_id = ${plantReport.plantId} AND (status = 'IN_PROGRESS' OR status = 'PENDING')
@@ -17,7 +18,8 @@ const getPendingAndInProgressTasks = async (db, plantReports) => {
                         resolve(rows);
                     }
                 )
-            })
+            });
+        }
         )
     )).flat(1);
 
