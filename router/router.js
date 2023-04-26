@@ -129,9 +129,11 @@ const saveDataFromRouter = async (data, db) => {
                 return errorFlag;
             })
             .catch(function (err) {
+                console.log(err);
                 return false;
             });
     }).catch(function (err) {
+        console.log(err);
         return false;
     });
 };
