@@ -51,13 +51,11 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 // Read router information
 // cron.schedule("* * * * *", async () => {
-//     console.log('-----CRON-----');
 //     try {
 //         await getDataFromRouterAndSave(db);
 //     } catch (error) {
 //         console.log(error);
 //     }
-//     console.log("-------------");
 // });
 
 app.get('/plants', async function (req, res) {
@@ -68,7 +66,6 @@ app.get('/plants', async function (req, res) {
             throw "No ips or routers";
         }
         const newPlantReports = await getDataFromRouterAndSave(db, routersWithIp);
-        console.log("-------------", newPlantReports);
         if (newPlantReports && newPlantReports.length) {
             await generateTasksIfNeeded(db, newPlantReports);
         }
