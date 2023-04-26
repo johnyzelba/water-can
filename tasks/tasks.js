@@ -89,7 +89,7 @@ const generateTasksIfNeeded = async (db,) => {
     try {
         await db.serialize(async () => {
             const plants = await getPlants(db);
-            const plantsNeedingWater = await getLatestPlantsReports(db, plants)
+            const plantsNeedingWater = (await getLatestPlantsReports(db, plants))
                 .filter(plantReport => plantReport.soilMoisture <= 100);
 
             if (plantsNeedingWater.length > 0) {
