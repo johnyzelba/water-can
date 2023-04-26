@@ -1,4 +1,3 @@
-const { startTransaction, endTransaction } = require('../utils/transactions');
 const { getPlants } = require('../utils/plants');
 
 const getPendingAndInProgressTasks = async (db, plantReports) => {
@@ -72,7 +71,8 @@ const generateTasks = async (db, plantReports) => {
                     VALUES (${plantReport.plantId}, "PENDING", CURRENT_TIMESTAMP)`,
                     (err, rows) => {
                         if (err) {
-                            db.each('ROLLBACK').then(() => reject(err));
+                            db.all('ROLLBACK'); 
+                            reject(err);
                         }
                         console.log(`${rows.length || "NO"} NEW TASKS CREATED`);
                         resolve("SUCCESS");
@@ -84,12 +84,10 @@ const generateTasks = async (db, plantReports) => {
 };
 
 
-const generateTasksIfNeeded = async (db, reportsFromProps) => {
+const generateTasksIfNeeded = async ({ db, reportsFromProps, plants}) => {
     try {
         await db.serialize(async () => {
-            await startTransaction(db);
-
-            const plants = await getPlants(db);
+            const plants = plants || await getPlants(db);
             const plantsNeedingWater = (reportsFromProps || await getLatestPlantsReports(db, plants))
                 .filter(plantReport => plantReport.soilMoisture <= 100);
 
@@ -104,8 +102,6 @@ const generateTasksIfNeeded = async (db, reportsFromProps) => {
                     console.log("NO NEED TO GENERATE A NEW TASK");
                 }
             }
-
-            await endTransaction(db);
         });
     }
     catch (e) {

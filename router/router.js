@@ -107,7 +107,7 @@ const saveDataFromRouter = async (data, db) => {
                         ) {
                         var error = new Error('Missing information');
                         console.log(error);
-                        db.each('ROLLBACK');
+                        db.all('ROLLBACK');
                         reject(error);
                     }
                     console.log("-----3");
@@ -119,7 +119,7 @@ const saveDataFromRouter = async (data, db) => {
                             console.log("-----4");
                             if (error) {
                                 console.log(error);
-                                db.each('ROLLBACK')
+                                db.all('ROLLBACK');
                                 reject(error);
                             }
                             console.log(`SAVED SUCCESSFULLY`);
@@ -145,12 +145,12 @@ const saveDataFromRouter = async (data, db) => {
 };
 
 const getDataFromRouterAndSave = async (db, routersWithIp) => {
-    await startTransaction(db);
     const plants = await getPlants(db);
     const promises = routersWithIp.map(routerWithIp => getDataFromRouter(routerWithIp.ip));
     const responses = await Promise.all(promises);
     //TODO: apply for rest of array
     const response = responses[0];
+    
     if (response.error) {
         throw response.error;
     }
@@ -165,11 +165,7 @@ const getDataFromRouterAndSave = async (db, routersWithIp) => {
             plantId
         })
     })
-    console.log("----------dataToSave ", dataToSave);
-
     const isSaved = await saveDataFromRouter(dataToSave, db);
-
-    await endTransaction(db);
 
     return isSaved ? response.data : false;
 };

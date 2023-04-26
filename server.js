@@ -9,6 +9,7 @@ const path = require('path');
 
 const { getDataFromRouterAndSave, getRouterIps } = require("./router/router");
 const { generateTasksIfNeeded } = require("./tasks/tasks");
+const { startTransaction, endTransaction } = require('../utils/transactions');
 
 path.resolve(__dirname, '../../../dev.sqlite3')
 
@@ -61,11 +62,14 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 app.get('/plants', async function (req, res) {
     try {
+        await startTransaction(db);
         const routersWithIp = await getRouterIps(db);
         const newPlantReports = await getDataFromRouterAndSave(db, routersWithIp);
+        console.log("-------------", newPlantReports);
         if (newPlantReports) {
-            await generateTasksIfNeeded(db, newPlantReports);
+            await generateTasksIfNeeded({db, newPlantReports});
         }
+        await endTransaction(db);
         res.send({})
     } catch (error) {
         res.send({ 'ok': false, 'msg': error });
