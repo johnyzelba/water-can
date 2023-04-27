@@ -155,9 +155,11 @@ const generateTasksIfNeeded = async (db,) => {
             const plants = await getPlants(db);
             const plantsNeedingWater = (await getLatestPlantsReports(db, plants))
                 .filter(plantReport => plantReport.soilMoisture < SOIL_MOISTURE_WATERING_THRESHOLD);
-
+            console.log("----1")
             if (plantsNeedingWater.length > 0) {
+                console.log("----2")
                 const tasksInProgress = await getPlantsPendingAndInProgressTasks(db, plantsNeedingWater);
+                console.log("----3")
                 const plantsNeedingWaterWithoutTask = plantsNeedingWater
                     .filter(plantReport => !tasksInProgress.find(task => task.plantId === plantReport.plantId))
 
