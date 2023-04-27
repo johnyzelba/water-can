@@ -188,12 +188,12 @@ const runTaskIfNeeded = async (db) => {
                 return;
             }
             const runningTask = tasks[0];
-            const latestPlantReport = await getLatestPlantsReports(db, [{ id: runningTask.plantId }])[0];
+            const latestPlantReport = (await getLatestPlantsReports(db, [{ id: runningTask.plantId }]))[0];
             console.log(latestPlantReport, runningTask.plantId);
             if (!latestPlantReport) {
                 return;
             }
-            const plant = await getPlant(db, runningTask.plantId)[0];
+            const plant = (await getPlant(db, runningTask.plantId))[0];
             if (!plant) {
                 return;
             }
