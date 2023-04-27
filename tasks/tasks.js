@@ -96,7 +96,7 @@ const getLatestPlantsReports = async (db, plants) => {
             })
         )
     )).flat(1);
-    console.log(`FOUND ${plantReportRows.length} REPORTS`);
+    console.log(`FOUND ${plantReportRows.length} REPORTS`, plantReportRows);
     return plantReportRows.map(row => ({
         plantId: row.plant_id,
         soilMoisture: row.soil_moisture,
