@@ -1,17 +1,17 @@
 const { getPlants, getPlant } = require('../utils/plants');
 const Gpio = require('onoff').Gpio;
 
-const waterSelanoid = new Gpio(67, 'out');
-const nitrogenPump = new Gpio(68, 'out');
-const phosphorusPump = new Gpio(44, 'out');
-const potassiumPump = new Gpio(26, 'out');
-const stirrer = new Gpio(46, 'out');
+const waterSelanoid = new Gpio(44, 'out');
+const nitrogenPump = new Gpio(26, 'out');
+const phosphorusPump = new Gpio(46, 'out');
+const potassiumPump = new Gpio(65, 'out');
+const stirrer = new Gpio(45, 'out');
 
-const ultraSonic1Trig = new Gpio(66, 'out');
-const ultraSonic1Echo = new Gpio(69, 'in');
-const ultraSonic2Trig = new Gpio(45, 'out');
-const ultraSonic2Echo = new Gpio(47, 'in');
-const waterFlow = new Gpio(27, 'out');
+const ultraSonic1Trig = new Gpio(47, 'out');
+const ultraSonic1Echo = new Gpio(27, 'in');
+const ultraSonic2Trig = new Gpio(62, 'out');
+const ultraSonic2Echo = new Gpio(36, 'in');
+const waterFlow = new Gpio(32, 'out');
 
 const SOIL_MOISTURE_WATERING_THRESHOLD = 15;
 
@@ -96,7 +96,7 @@ const getLatestPlantsReports = async (db, plants) => {
             })
         )
     )).flat(1);
-    console.log(`FOUND ${plantReportRows.length} REPORTS`, plantReportRows);
+    console.log(`FOUND ${plantReportRows.length} REPORTS`);
     return plantReportRows.map(row => ({
         plantId: row.plant_id,
         soilMoisture: row.soil_moisture,
@@ -154,11 +154,8 @@ const generateTasksIfNeeded = async (db,) => {
         await db.serialize(async () => {
             const plants = await getPlants(db);
             const plantsNeedingWater = (await getLatestPlantsReports(db, plants))
-            console.log("----1")
             if (plantsNeedingWater.length > 0) {
-                console.log("----2")
                 const tasksInProgress = await getPlantsPendingAndInProgressTasks(db, plantsNeedingWater);
-                console.log("----3")
                 const plantsNeedingWaterWithoutTask = plantsNeedingWater
                     .filter(plantReport => !tasksInProgress.find(task => task.plantId === plantReport.plantId))
 
@@ -197,14 +194,14 @@ const runTaskIfNeeded = async (db) => {
             if (!plant) {
                 return;
             }
-            console.log(`RUNNING TASK: ${latestPlantReport}`);
+
             if (latestPlantReport.soilMoisture < SOIL_MOISTURE_WATERING_THRESHOLD) {
                 console.log(`RUNNING TASK ID: ${runningTask.id}`);
                 // await updateTaskStatus(db, runningTask.id, "IN_PROGRESS");
 
-                // await fillWaterCan(plant.potSize);
-                // await addNutritions(plant.potSize, plant.n, plant.p, plant.k);
-                // await notify(plant.id, plant.name);
+                await fillWaterCan(plant.potSize);
+                await addNutritions(plant.potSize, plant.n, plant.p, plant.k);
+                await notify(plant.id, plant.name);
 
                 // await updateTaskStatus(db, runningTask.id, "DONE");
             }
@@ -219,12 +216,26 @@ const runTaskIfNeeded = async (db) => {
 };
 
 const fillWaterCan = async (potSize) => {
+    waterSelanoid.writeSync(1);
+    await new Promise((res, rej) => setTimeout(() => res(waterSelanoid.writeSync(0)), 2000));
 };
 
 const addNutritions = async (potSize, nitrogen, phosphorus, potassium) => {
+    nitrogenPump.writeSync(1);
+    await new Promise((res, rej) => setTimeout(() => res(nitrogenPump.writeSync(0)), 2000));
+
+    phosphorusPump.writeSync(1);
+    await new Promise((res, rej) => setTimeout(() => res(phosphorusPump.writeSync(0)), 2000));
+
+    potassiumPump.writeSync(1);
+    await new Promise((res, rej) => setTimeout(() => res(potassiumPump.writeSync(0)), 2000));
+
+    stirrer.writeSync(1);
+    await new Promise((res, rej) => setTimeout(() => res(stirrer.writeSync(0)), 2000));
 };
 
 const notify = async (plnatId, plantName) => {
+    console.log(`WATER CAN FOR ${plantName}(${plantId}) IS READY!`);
 };
 
 module.exports = { generateTasksIfNeeded, runTaskIfNeeded };
