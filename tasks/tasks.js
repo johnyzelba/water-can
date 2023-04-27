@@ -154,7 +154,6 @@ const generateTasksIfNeeded = async (db,) => {
         await db.serialize(async () => {
             const plants = await getPlants(db);
             const plantsNeedingWater = (await getLatestPlantsReports(db, plants))
-                .filter(plantReport => plantReport.soilMoisture < SOIL_MOISTURE_WATERING_THRESHOLD);
             console.log("----1")
             if (plantsNeedingWater.length > 0) {
                 console.log("----2")
