@@ -234,7 +234,7 @@ const addNutritions = async (potSize, nitrogen, phosphorus, potassium) => {
     await new Promise((res, rej) => setTimeout(() => res(stirrer.writeSync(0)), 2000));
 };
 
-const notify = async (plnatId, plantName) => {
+const notify = async (plantId, plantName) => {
     console.log(`WATER CAN FOR ${plantName}(${plantId}) IS READY!`);
 };
 
