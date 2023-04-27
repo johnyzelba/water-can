@@ -77,7 +77,7 @@ const getPendingTasks = async (db) => {
 
 
 const getLatestPlantsReports = async (db, plants) => {
-    console.log(`GETTING LATEST PLANTS REPORTS FROM DB`, plants);
+    console.log(`GETTING LATEST PLANTS REPORTS FROM DB`);
     const plantReportRows = (await Promise.all(
         plants.map(async plant =>
             new Promise(function (resolve, reject) {
@@ -196,7 +196,7 @@ const runTaskIfNeeded = async (db) => {
             if (!plant) {
                 return;
             }
-
+            console.log(`RUNNING TASK: ${latestPlantReport}`);
             if (latestPlantReport.soilMoisture < SOIL_MOISTURE_WATERING_THRESHOLD) {
                 console.log(`RUNNING TASK ID: ${runningTask.id}`);
                 // await updateTaskStatus(db, runningTask.id, "IN_PROGRESS");
