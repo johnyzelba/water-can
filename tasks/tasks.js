@@ -188,12 +188,13 @@ const runTaskIfNeeded = async (db) => {
             }
             const runningTask = tasks[0];
             const latestPlantReport = await getLatestPlantsReports(db, [{ id: runningTask.plantId }])[0];
+            console.log(latestPlantReport, runningTask.plantId);
             if (!latestPlantReport) {
-                throw "plant report not found";
+                return;
             }
             const plant = await getPlant(db, runningTask.plantId)[0];
             if (!plant) {
-                throw "plant not found";
+                return;
             }
 
             if (latestPlantReport.soilMoisture < SOIL_MOISTURE_WATERING_THRESHOLD) {
