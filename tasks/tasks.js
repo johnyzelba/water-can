@@ -33,9 +33,8 @@ const getPlantsPendingAndInProgressTasks = async (db, plantReports) => {
 };
 
 const getPendingTasks = async (db) => {
-    console.log(`GETTING PENDING AND IN_PROGRESS TASKS FROM DB`);
-    consttasksInProgressRows = [
-        await new Promise(function (resolve, reject) {
+    console.log(`GETTING PENDING TASKS FROM DB`);
+    const tasksInProgressRows = await new Promise(function (resolve, reject) {
             db.all(
                 `SELECT * FROM tasks 
                     WHERE  status = 'PENDING'
@@ -48,8 +47,8 @@ const getPendingTasks = async (db) => {
                     resolve(rows);
                 }
             )
-        })
-    ];
+        });
+    console.log(tasksInProgressRows);
 
     console.log(`FOUND ${tasksInProgressRows.length} PENDING TASKS`);
     return tasksInProgressRows.map(row => ({
