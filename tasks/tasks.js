@@ -194,7 +194,7 @@ const runTaskIfNeeded = async (db) => {
             if (!plant) {
                 return;
             }
-
+            console.log("--------", latestPlantReport.soilMoisture < SOIL_MOISTURE_WATERING_THRESHOLD)
             if (latestPlantReport.soilMoisture < SOIL_MOISTURE_WATERING_THRESHOLD) {
                 console.log(`RUNNING TASK ID: ${runningTask.id}`);
                 // await updateTaskStatus(db, runningTask.id, "IN_PROGRESS");
