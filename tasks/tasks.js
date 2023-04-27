@@ -146,7 +146,7 @@ const runTaskIfNeeded = async (db,) => {
         await db.serialize(async () => {
             const tasks = await getPendingTasks(db);
             const runningTask = tasks[0];
-            const plantReports = await getLatestPlantsReports(db, [{ id: runningTask.plantIs }]);
+            const plantReports = await getLatestPlantsReports(db, [{ id: runningTask.plantId }]);
             console.log(runningTask);
             console.log(plantReports);
         });
