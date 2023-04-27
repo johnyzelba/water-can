@@ -77,7 +77,7 @@ const getPendingTasks = async (db) => {
 
 
 const getLatestPlantsReports = async (db, plants) => {
-    console.log(`GETTING LATEST PLANTS REPORTS FROM DB`);
+    console.log(`GETTING LATEST PLANTS REPORTS FROM DB`, plants);
     const plantReportRows = (await Promise.all(
         plants.map(async plant =>
             new Promise(function (resolve, reject) {
