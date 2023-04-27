@@ -13,7 +13,7 @@ const ultraSonic2Trig = new Gpio(45, 'out');
 const ultraSonic2Echo = new Gpio(47, 'in');
 const waterFlow = new Gpio(27, 'out');
 
-const SOIL_MOISTURE_WATERING_THRESHOLD = 10;
+const SOIL_MOISTURE_WATERING_THRESHOLD = 15;
 
 const getPlantsPendingAndInProgressTasks = async (db, plantReports) => {
     console.log(`GETTING PENDING AND IN_PROGRESS TASKS FROM DB`);
@@ -166,6 +166,8 @@ const generateTasksIfNeeded = async (db,) => {
                 } else {
                     console.log("NO NEED TO GENERATE A NEW TASK");
                 }
+            } else {
+                console.log("NO NEED TO GENERATE A NEW TASK");
             }
         });
     }
