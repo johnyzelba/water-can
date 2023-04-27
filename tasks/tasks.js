@@ -1,8 +1,23 @@
-const { getPlants } = require('../utils/plants');
+const { getPlants, getPlant } = require('../utils/plants');
+const Gpio = require('onoff').Gpio;
+
+const waterSelanoid = new Gpio(67, 'out');
+const nitrogenPump = new Gpio(68, 'out');
+const phosphorusPump = new Gpio(44, 'out');
+const potassiumPump = new Gpio(26, 'out');
+const stirrer = new Gpio(46, 'out');
+
+const ultraSonic1Trig = new Gpio(66, 'out');
+const ultraSonic1Echo = new Gpio(69, 'in');
+const ultraSonic2Trig = new Gpio(45, 'out');
+const ultraSonic2Echo = new Gpio(47, 'in');
+const waterFlow = new Gpio(27, 'out');
+
+const SOIL_MOISTURE_WATERING_THRESHOLD = 10;
 
 const getPlantsPendingAndInProgressTasks = async (db, plantReports) => {
     console.log(`GETTING PENDING AND IN_PROGRESS TASKS FROM DB`);
-    consttasksInProgressRows = (await Promise.all(
+    const tasksInProgressRows = (await Promise.all(
         plantReports.map(async plantReport => {
             return new Promise(function (resolve, reject) {
                 db.all(
@@ -37,9 +52,9 @@ const getPendingTasks = async (db) => {
     const tasksInProgressRows = await new Promise(function (resolve, reject) {
             db.all(
                 `SELECT * FROM tasks 
-                    WHERE  status = 'PENDING'
-                    ORDER BY timestamp
-                    DESC`,
+                WHERE  status = 'PENDING'
+                ORDER BY timestamp
+                DESC`,
                 (err, rows) => {
                     if (err) {
                         reject(err);
@@ -112,13 +127,34 @@ const generateTasks = async (db, plantReports) => {
     console.log(`${res.length || "NO"} NEW TASKS CREATED`);
 };
 
+const updateTaskStatus = async (db, taskId, status) => {
+    console.log(`UPDATING TASK STATUS IN DB`);
+    const tasksInProgressRows = await new Promise(function (resolve, reject) {
+        db.all(
+            `UPDATE tasks SET status = ${status}
+            WHERE id = ${taskId}`,
+            (err, rows) => {
+                if (err) {
+                    db.all('ROLLBACK');
+                    reject(err);
+                }
+                resolve(rows);
+            }
+        )
+    });
+    console.log(tasksInProgressRows);
+
+    console.log(`TASK STATUS UPDATED SUCCESSFULLY`);
+    return;
+};
+
 
 const generateTasksIfNeeded = async (db,) => {
     try {
         await db.serialize(async () => {
             const plants = await getPlants(db);
             const plantsNeedingWater = (await getLatestPlantsReports(db, plants))
-                .filter(plantReport => plantReport.soilMoisture <= 100);
+                .filter(plantReport => plantReport.soilMoisture < SOIL_MOISTURE_WATERING_THRESHOLD);
 
             if (plantsNeedingWater.length > 0) {
                 const tasksInProgress = await getPlantsPendingAndInProgressTasks(db, plantsNeedingWater);
@@ -141,14 +177,33 @@ const generateTasksIfNeeded = async (db,) => {
     return true;
 };
 
-const runTaskIfNeeded = async (db,) => {
+const runTaskIfNeeded = async (db) => {
     try {
         await db.serialize(async () => {
             const tasks = await getPendingTasks(db);
+            if (!tasks || !tasks.length) {
+                return;
+            }
             const runningTask = tasks[0];
-            const plantReports = await getLatestPlantsReports(db, [{ id: runningTask.plantId }]);
-            console.log(runningTask);
-            console.log(plantReports);
+            const latestPlantReport = await getLatestPlantsReports(db, [{ id: runningTask.plantId }])[0];
+            if (!latestPlantReport) {
+                throw "plant report not found";
+            }
+            const plant = await getPlant(db, runningTask.plantId)[0];
+            if (!plant) {
+                throw "plant not found";
+            }
+
+            if (latestPlantReport.soilMoisture < SOIL_MOISTURE_WATERING_THRESHOLD) {
+                console.log(`RUNNING TASK ID: ${runningTask.id}`);
+                // await updateTaskStatus(db, runningTask.id, "IN_PROGRESS");
+
+                // await fillWaterCan(plant.potSize);
+                // await addNutritions(plant.potSize, plant.n, plant.p, plant.k);
+                // await notify(plant.id, plant.name);
+
+                // await updateTaskStatus(db, runningTask.id, "DONE");
+            }
         });
     }
     catch (e) {
@@ -157,6 +212,15 @@ const runTaskIfNeeded = async (db,) => {
     }
 
     return true;
+};
+
+const fillWaterCan = async (potSize) => {
+};
+
+const addNutritions = async (potSize, nitrogen, phosphorus, potassium) => {
+};
+
+const notify = async (plnatId, plantName) => {
 };
 
 module.exports = { generateTasksIfNeeded, runTaskIfNeeded };

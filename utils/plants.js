@@ -24,4 +24,30 @@ const getPlants = async (db) => {
     }));
 };
 
-module.exports = { getPlants };
+const getPlant = async (db, plantId) => {
+    console.log(`GETTING PLANTS FROM DB`);
+    const plantRows = await new Promise(function (resolve, reject) {
+        return db.all(
+            `SELECT * FROM plants WHERE id = ${plantId}`,
+            (err, rows) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve(rows);
+            }
+        );
+    });
+    console.log(`FOUND ${plantRows.length} PLANTS`);
+    return plantRows.map(row => ({
+        id: row.id,
+        name: row.name,
+        mac: row.mac,
+        routerMac: row.router_mac,
+        potSize: row.pot_size,
+        n: row.n,
+        p: row.p,
+        k: row.k
+    }));
+};
+
+module.exports = { getPlants, getPlant };
