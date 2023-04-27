@@ -8,7 +8,7 @@ const app = express();
 const path = require('path');
 
 const { getDataFromRouterAndSave, getRouterIps } = require("./router/router");
-const { generateTasksIfNeeded } = require("./tasks/tasks");
+const { generateTasksIfNeeded, runTaskIfNeeded } = require("./tasks/tasks");
 const { startTransaction, endTransaction } = require('./utils/transactions');
 
 path.resolve(__dirname, '../../../dev.sqlite3')
@@ -51,12 +51,33 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 // Read router information
 // cron.schedule("* * * * *", async () => {
-//     try {
-//         await getDataFromRouterAndSave(db);
-//     } catch (error) {
-//         console.log(error);
+// try {
+//     await startTransaction(db);
+//     const routersWithIp = await getRouterIps(db);
+//     if (!routersWithIp) {
+//         throw "No ips or routers";
 //     }
+//     const newPlantReports = await getDataFromRouterAndSave(db, routersWithIp);
+//     if (newPlantReports && newPlantReports.length) {
+//         await generateTasksIfNeeded(db);
+//     }
+//     await endTransaction(db);
+// } catch (error) {
+//     await endTransaction(db);
+// }
 // });
+
+app.get('/runtask', async function (req, res) {
+    try {
+        await startTransaction(db);
+        await runTaskIfNeeded(db);
+        await endTransaction(db);
+        res.send({ })
+    } catch (error) {
+        await endTransaction(db);
+        res.send({ 'ok': false, 'msg': error });
+    }
+});
 
 app.get('/plants', async function (req, res) {
     try {
@@ -70,7 +91,7 @@ app.get('/plants', async function (req, res) {
             await generateTasksIfNeeded(db);
         }
         await endTransaction(db);
-        res.send({})
+        res.send({ newPlantReports })
     } catch (error) {
         await endTransaction(db);
         res.send({ 'ok': false, 'msg': error });

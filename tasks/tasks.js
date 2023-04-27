@@ -1,8 +1,8 @@
 const { getPlants } = require('../utils/plants');
 
-const getPendingAndInProgressTasks = async (db, plantReports) => {
+const getPlantsPendingAndInProgressTasks = async (db, plantReports) => {
     console.log(`GETTING PENDING AND IN_PROGRESS TASKS FROM DB`);
-    const tasksInProgressRows = (await Promise.all(
+    consttasksInProgressRows = (await Promise.all(
         plantReports.map(async plantReport => {
             return new Promise(function (resolve, reject) {
                 db.all(
@@ -22,7 +22,36 @@ const getPendingAndInProgressTasks = async (db, plantReports) => {
         )
     )).flat(1);
 
+
     console.log(`FOUND ${tasksInProgressRows.length} PENDING AND IN_PROGRESS TASKS`);
+    return tasksInProgressRows.map(row => ({
+        id: row.id,
+        plantId: row.plant_id,
+        status: row.status,
+        timestamp: row.timestamp
+    }));
+};
+
+const getPendingTasks = async (db) => {
+    console.log(`GETTING PENDING AND IN_PROGRESS TASKS FROM DB`);
+    consttasksInProgressRows = [
+        await new Promise(function (resolve, reject) {
+            db.all(
+                `SELECT * FROM tasks 
+                    WHERE  status = 'PENDING'
+                    ORDER BY timestamp
+                    DESC`,
+                (err, rows) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    resolve(rows);
+                }
+            )
+        })
+    ];
+
+    console.log(`FOUND ${tasksInProgressRows.length} PENDING TASKS`);
     return tasksInProgressRows.map(row => ({
         id: row.id,
         plantId: row.plant_id,
@@ -72,7 +101,7 @@ const generateTasks = async (db, plantReports) => {
                     VALUES (${plantReport.plantId}, "PENDING", CURRENT_TIMESTAMP)`,
                     (err, rows) => {
                         if (err) {
-                            db.all('ROLLBACK'); 
+                            db.all('ROLLBACK');
                             reject(err);
                         }
                         resolve("SUCCESS");
@@ -93,7 +122,7 @@ const generateTasksIfNeeded = async (db,) => {
                 .filter(plantReport => plantReport.soilMoisture <= 100);
 
             if (plantsNeedingWater.length > 0) {
-                const tasksInProgress = await getPendingAndInProgressTasks(db, plantsNeedingWater);
+                const tasksInProgress = await getPlantsPendingAndInProgressTasks(db, plantsNeedingWater);
                 const plantsNeedingWaterWithoutTask = plantsNeedingWater
                     .filter(plantReport => !tasksInProgress.find(task => task.plantId === plantReport.plantId))
 
@@ -113,4 +142,22 @@ const generateTasksIfNeeded = async (db,) => {
     return true;
 };
 
-module.exports = { generateTasksIfNeeded };
+const runTaskIfNeeded = async (db,) => {
+    try {
+        await db.serialize(async () => {
+            const tasks = await getPendingTasks(db);
+            const runningTask = tasks[0];
+            const plantReports = await getLatestPlantsReports(db, [{ id: runningTask.plantIs }]);
+            console.log(runningTask);
+            console.log(plantReports);
+        });
+    }
+    catch (e) {
+        console.log(e);
+        return false;
+    }
+
+    return true;
+};
+
+module.exports = { generateTasksIfNeeded, runTaskIfNeeded };
