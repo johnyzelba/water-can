@@ -7,7 +7,7 @@ const chatId = process.env.TELEGRAM_CHAT_ID;
 const bot = new TelegramBot(token, { polling: true });
 
 const sendMsgToUser = async (msg) => {
-    const now = new Date().toLocaleString('he-IL');
+    const now = new Date().toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem' });
     await bot.sendMessage(chatId, `${now}: ${msg}`);
 }
 
