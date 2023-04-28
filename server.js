@@ -13,12 +13,7 @@ const { startTransaction, endTransaction } = require('./utils/transactions');
 
 path.resolve(__dirname, '../../../dev.sqlite3')
 
-const db = new sqlite3.Database('/home/debian/water-can/WaterCan.db', (err) => {
-    if (err) {
-        return console.error(err.message);
-    }
-    console.log('Connected to the in-memory SQlite database.');
-});
+
 
 axiosRetry(axios, {
     retries: 5,
@@ -98,15 +93,23 @@ app.get('/plants', async function (req, res) {
     }
 });
 
-app.listen(6069, (error) => {
-    if (error) {
-        db.close((err) => {
-            if (err) {
-                return console.error(err.message, db);
-            }
-            console.log('Close the database connection.');
-        });
-        return error;
+
+const db = new sqlite3.Database('/home/debian/water-can/WaterCan.db', (err) => {
+    if (err) {
+        return console.error(err.message);
     }
-    console.log("Server is running");
+    console.log('Connected to the in-memory SQlite database.');
+
+    app.listen(6069, (error) => {
+        if (error) {
+            db.close((err) => {
+                if (err) {
+                    return console.error(err.message, db);
+                }
+                console.log('Close the database connection.');
+            });
+            return error;
+        }
+        console.log("Server is running");
+    });
 });

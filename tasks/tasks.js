@@ -202,8 +202,9 @@ const runTaskIfNeeded = async (db) => {
                     await fillWaterCan(plant.potSize);
                     await addNutritions(plant.potSize, plant.n, plant.p, plant.k);
                     await notify(plant.id, plant.name);
-                    res();
+                    
                     // await updateTaskStatus(db, runningTask.id, "DONE");
+                    res();
                 } else {
                     console.log(`PLANT DON'T NEED WATERING`);
                     // TODO: remove task
