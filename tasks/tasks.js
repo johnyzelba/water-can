@@ -122,7 +122,7 @@ const generateTasks = async (db, plantReports) => {
                     VALUES (${plantReport.plantId}, "PENDING", CURRENT_TIMESTAMP)`,
                     (err, rows) => {
                         if (err) {
-                            db.all('ROLLBACK');
+                            db.rollback();
                             sendMsgToUser(`Generated a new watering task for plant id: ${plantReport.plantId}`);
                             reject(err);
                         }
@@ -143,7 +143,7 @@ const updateTaskStatus = async (db, taskId, status) => {
             WHERE id = ${taskId}`,
             (err, rows) => {
                 if (err) {
-                    db.all('ROLLBACK');
+                    db.rollback();
                     reject(err);
                 }
                 resolve(rows);
@@ -205,7 +205,7 @@ const runTaskIfNeeded = async (db) => {
                 }
                 if (latestPlantReport.soilMoisture < SOIL_MOISTURE_WATERING_THRESHOLD) {
                     console.log(`RUNNING TASK ID: ${runningTask.id}`);
-                    sendMsgToUser(`Water can fill has started for plant: ${plant.name }(${plant.id})`);
+                    sendMsgToUser(`Filling water can for plant: ${plant.name }(${plant.id})`);
                     // await updateTaskStatus(db, runningTask.id, "IN_PROGRESS");
 
                     await fillWaterCan(plant.potSize);
@@ -213,7 +213,7 @@ const runTaskIfNeeded = async (db) => {
                     await notify(plant.id, plant.name);
                     
                     // await updateTaskStatus(db, runningTask.id, "DONE");
-                    sendMsgToUser(`Finnished filling water for plant: ${plant.name}(${plant.id})`);
+                    sendMsgToUser(`Finnished filling water can for plant: ${plant.name}(${plant.id})`);
 
                     res();
                 } else {

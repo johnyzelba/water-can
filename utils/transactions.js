@@ -1,12 +1,12 @@
 const startTransaction = async (db) => {
     return new Promise(function (resolve, reject) {
-        db.all("BEGIN", (err, rows) => err ? reject(err) : resolve(rows))
+        db.begin((err, rows) => err ? reject(err) : resolve(rows));
     });
 };
 
 const endTransaction = async (db) => {
     return new Promise(function (resolve, reject) {
-        db.all("COMMIT", (err, rows) => err ? reject(err) : resolve(rows))
+        db.commit((err, rows) => err ? reject(err) : resolve(rows))
     });
 };
 

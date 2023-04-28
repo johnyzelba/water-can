@@ -106,7 +106,7 @@ const saveDataFromRouter = async (data, db) => {
                         ) {
                             var error = new Error('Missing information');
                             console.log(error);
-                            db.all('ROLLBACK');
+                            db.rollback();
                             reject(error);
                         }
                         db.all(
@@ -116,7 +116,7 @@ const saveDataFromRouter = async (data, db) => {
                             (error, rows) => {
                                 if (error) {
                                     console.log(error);
-                                    db.all('ROLLBACK');
+                                    db.rollback();
                                     reject(error);
                                 }
                                 console.log(`SAVED SUCCESSFULLY`);
