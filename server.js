@@ -7,12 +7,14 @@ const sqlite3 = require('sqlite3').verbose();
 const app = express();
 const path = require('path');
 const TelegramBot = require('node-telegram-bot-api');
+require('dotenv').config()
 
 const { getDataFromRouterAndSave, getRouterIps } = require("./router/router");
 const { generateTasksIfNeeded, runTaskIfNeeded } = require("./tasks/tasks");
 const { startTransaction, endTransaction } = require('./utils/transactions');
 
 const token = process.env.TELEGRAM_TOKEN;
+console.log("----------------", process.env.TELEGRAM_TOKEN);
 const bot = new TelegramBot(token, { polling: true });
 
 path.resolve(__dirname, '../../../dev.sqlite3');
