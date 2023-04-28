@@ -6,7 +6,7 @@ const cron = require('node-cron');
 const sqlite3 = require('sqlite3').verbose();
 const app = express();
 const path = require('path');
-const { sendMsgToUser } = require('../utils/telegramBot');
+const { sendMsgToUser } = require('./utils/telegramBot');
 
 const { getDataFromRouterAndSave, getRouterIps } = require("./router/router");
 const { generateTasksIfNeeded, runTaskIfNeeded } = require("./tasks/tasks");
