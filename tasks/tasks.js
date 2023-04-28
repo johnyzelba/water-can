@@ -1,4 +1,5 @@
 const { getPlants, getPlant } = require('../utils/plants');
+const { sendMsgToUser } = requier('../utils/telegramBot');
 const Gpio = require('onoff').Gpio;
 
 const waterSelanoid = new Gpio(44, 'out');
@@ -122,6 +123,7 @@ const generateTasks = async (db, plantReports) => {
                     (err, rows) => {
                         if (err) {
                             db.all('ROLLBACK');
+                            sendMsgToUser(`Generated a new watering task for plant id: ${plantReport.plantId}`);
                             reject(err);
                         }
                         resolve("SUCCESS");
@@ -203,6 +205,7 @@ const runTaskIfNeeded = async (db) => {
                 }
                 if (latestPlantReport.soilMoisture < SOIL_MOISTURE_WATERING_THRESHOLD) {
                     console.log(`RUNNING TASK ID: ${runningTask.id}`);
+                    sendMsgToUser(`Water can fill has started for plant: ${plant.name }(${plant.id})`);
                     // await updateTaskStatus(db, runningTask.id, "IN_PROGRESS");
 
                     await fillWaterCan(plant.potSize);
@@ -210,6 +213,8 @@ const runTaskIfNeeded = async (db) => {
                     await notify(plant.id, plant.name);
                     
                     // await updateTaskStatus(db, runningTask.id, "DONE");
+                    sendMsgToUser(`Finnished filling water for plant: ${plant.name}(${plant.id})`);
+
                     res();
                 } else {
                     console.log(`PLANT DON'T NEED WATERING`);
