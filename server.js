@@ -14,7 +14,6 @@ const { generateTasksIfNeeded, runTaskIfNeeded } = require("./tasks/tasks");
 const { startTransaction, endTransaction } = require('./utils/transactions');
 
 const token = process.env.TELEGRAM_TOKEN;
-console.log("----------------", process.env.TELEGRAM_TOKEN);
 const bot = new TelegramBot(token, { polling: true });
 
 path.resolve(__dirname, '../../../dev.sqlite3');
@@ -37,6 +36,13 @@ Object.defineProperty(Array.prototype, 'flat', {
         }, []);
     }
 });
+
+const chat = await bot.getChat('@qIIO_oIIp');
+console.log("----------------");
+console.log("----------------", chat);
+console.log("----------------");
+
+bot.sendMessage(chat.id, 'Hello World!');
 
 // Matches "/echo [whatever]"
 bot.onText(/\/echo (.+)/, (msg, match) => {
