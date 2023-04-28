@@ -14,6 +14,8 @@ const { generateTasksIfNeeded, runTaskIfNeeded } = require("./tasks/tasks");
 const { startTransaction, endTransaction } = require('./utils/transactions');
 
 const token = process.env.TELEGRAM_TOKEN;
+const chatId = process.env.TELEGRAM_CHAT_ID;
+
 const bot = new TelegramBot(token, { polling: true });
 
 path.resolve(__dirname, '../../../dev.sqlite3');
@@ -44,9 +46,7 @@ bot.onText(/\/echo (.+)/, (msg, match) => {
     // 'match' is the result of executing the regexp above on the text content
     // of the message
 
-    const chatId = msg.chat.id;
     const resp = match[1]; // the captured "whatever"
-    console.log("------------chatId", chatId);
 
     // send back the matched "whatever" to the chat
     bot.sendMessage(chatId, resp);
@@ -137,12 +137,8 @@ const db = new sqlite3.Database('/home/debian/water-can/WaterCan.db', (err) => {
             return error;
         }
         console.log("SERVER IS RUNNING");
-
-        // const chat = await bot.getChat('@qIIO_oIIp');
-        // console.log("----------------");
-        // console.log("----------------", chat);
-        // console.log("----------------");
-
-        bot.sendMessage(chat.id, 'Hello World!');
+        bot.sendMessage(chatId, 'Hello World! 1');
+        const chat = await bot.getChat(chatId);
+        bot.sendMessage(chat.id, 'Hello World! 2');
     });
 });
