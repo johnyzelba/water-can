@@ -1,5 +1,5 @@
 const { getPlants, getPlant } = require('../utils/plants');
-const { sendMsgToUser } = requier('../utils/telegramBot');
+const { sendMsgToUser } = require('../utils/telegramBot');
 const Gpio = require('onoff').Gpio;
 
 const waterSelanoid = new Gpio(44, 'out');
