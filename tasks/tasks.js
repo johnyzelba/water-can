@@ -13,6 +13,12 @@ const ultraSonic2Trig = new Gpio(62, 'out');
 const ultraSonic2Echo = new Gpio(36, 'in');
 const waterFlow = new Gpio(32, 'out');
 
+waterSelanoid.writeSync(1);
+nitrogenPump.writeSync(1);
+phosphorusPump.writeSync(1);
+potassiumPump.writeSync(1);
+stirrer.writeSync(1);
+
 const SOIL_MOISTURE_WATERING_THRESHOLD = 15;
 
 const getPlantsPendingAndInProgressTasks = async (db, plantReports) => {
@@ -230,24 +236,24 @@ const runTaskIfNeeded = async (db) => {
 
 const fillWaterCan = async (potSize) => {
     console.log(`FILLING WATER CAN WITH WATER`);
-    waterSelanoid.writeSync(1);
-    await new Promise((res, rej) => setTimeout(() => res(waterSelanoid.writeSync(0)), 2000));
+    waterSelanoid.writeSync(0);
+    await new Promise((res, rej) => setTimeout(() => res(waterSelanoid.writeSync(1)), 2000));
 };
 
 const addNutritions = async (potSize, nitrogen, phosphorus, potassium) => {
     console.log(`ADDING NUTRIENTS TO WATER CAN`);
-    nitrogenPump.writeSync(1);
-    await new Promise((res, rej) => setTimeout(() => res(nitrogenPump.writeSync(0)), 2000));
+    nitrogenPump.writeSync(0);
+    await new Promise((res, rej) => setTimeout(() => res(nitrogenPump.writeSync(1)), 2000));
 
-    phosphorusPump.writeSync(1);
-    await new Promise((res, rej) => setTimeout(() => res(phosphorusPump.writeSync(0)), 2000));
+    phosphorusPump.writeSync(0);
+    await new Promise((res, rej) => setTimeout(() => res(phosphorusPump.writeSync(1)), 2000));
 
-    potassiumPump.writeSync(1);
-    await new Promise((res, rej) => setTimeout(() => res(potassiumPump.writeSync(0)), 2000));
+    potassiumPump.writeSync(0);
+    await new Promise((res, rej) => setTimeout(() => res(potassiumPump.writeSync(1)), 2000));
 
     console.log(`STIRRING WATER CAN`);
-    stirrer.writeSync(1);
-    await new Promise((res, rej) => setTimeout(() => res(stirrer.writeSync(0)), 2000));
+    stirrer.writeSync(0);
+    await new Promise((res, rej) => setTimeout(() => res(stirrer.writeSync(1)), 2000));
 };
 
 const notify = async (plantId, plantName) => {

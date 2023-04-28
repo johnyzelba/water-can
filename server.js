@@ -13,8 +13,6 @@ const { startTransaction, endTransaction } = require('./utils/transactions');
 
 path.resolve(__dirname, '../../../dev.sqlite3')
 
-
-
 axiosRetry(axios, {
     retries: 5,
     retryDelay: (retryCount) => {
@@ -44,7 +42,6 @@ app.all('/*', function (req, res, next) {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-// Read router information
 // cron.schedule("* * * * *", async () => {
 // try {
 //     await startTransaction(db);
@@ -98,7 +95,7 @@ const db = new sqlite3.Database('/home/debian/water-can/WaterCan.db', (err) => {
     if (err) {
         return console.error(err.message);
     }
-    console.log('Connected to the in-memory SQlite database.');
+    console.log('CONNECTED TO DB');
 
     app.listen(6069, (error) => {
         if (error) {
@@ -106,10 +103,10 @@ const db = new sqlite3.Database('/home/debian/water-can/WaterCan.db', (err) => {
                 if (err) {
                     return console.error(err.message, db);
                 }
-                console.log('Close the database connection.');
+                console.log('DB CONNECTION CLOSED');
             });
             return error;
         }
-        console.log("Server is running");
+        console.log("SERVER IS RUNNING");
     });
 });
