@@ -46,6 +46,7 @@ bot.onText(/\/echo (.+)/, (msg, match) => {
 
     const chatId = msg.chat.id;
     const resp = match[1]; // the captured "whatever"
+    console.log("------------chatId", chatId);
 
     // send back the matched "whatever" to the chat
     bot.sendMessage(chatId, resp);
@@ -137,10 +138,10 @@ const db = new sqlite3.Database('/home/debian/water-can/WaterCan.db', (err) => {
         }
         console.log("SERVER IS RUNNING");
 
-        const chat = await bot.getChat('@qIIO_oIIp');
-        console.log("----------------");
-        console.log("----------------", chat);
-        console.log("----------------");
+        // const chat = await bot.getChat('@qIIO_oIIp');
+        // console.log("----------------");
+        // console.log("----------------", chat);
+        // console.log("----------------");
 
         bot.sendMessage(chat.id, 'Hello World!');
     });
