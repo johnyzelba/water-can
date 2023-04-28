@@ -1,2 +1,4 @@
 /node_modules
 WaterCan.db
+package-lock.json
+.env

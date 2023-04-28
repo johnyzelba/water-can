@@ -6,12 +6,16 @@ const cron = require('node-cron');
 const sqlite3 = require('sqlite3').verbose();
 const app = express();
 const path = require('path');
+const TelegramBot = require('node-telegram-bot-api');
 
 const { getDataFromRouterAndSave, getRouterIps } = require("./router/router");
 const { generateTasksIfNeeded, runTaskIfNeeded } = require("./tasks/tasks");
 const { startTransaction, endTransaction } = require('./utils/transactions');
 
-path.resolve(__dirname, '../../../dev.sqlite3')
+const token = process.env.TELEGRAM_TOKEN;
+const bot = new TelegramBot(token, { polling: true });
+
+path.resolve(__dirname, '../../../dev.sqlite3');
 
 axiosRetry(axios, {
     retries: 5,
@@ -30,6 +34,28 @@ Object.defineProperty(Array.prototype, 'flat', {
             return flat.concat((Array.isArray(toFlatten) && (depth > 1)) ? toFlatten.flat(depth - 1) : toFlatten);
         }, []);
     }
+});
+
+// Matches "/echo [whatever]"
+bot.onText(/\/echo (.+)/, (msg, match) => {
+    // 'msg' is the received Message from Telegram
+    // 'match' is the result of executing the regexp above on the text content
+    // of the message
+
+    const chatId = msg.chat.id;
+    const resp = match[1]; // the captured "whatever"
+
+    // send back the matched "whatever" to the chat
+    bot.sendMessage(chatId, resp);
+});
+
+// Listen for any kind of message. There are different kinds of
+// messages.
+bot.on('message', (msg) => {
+    const chatId = msg.chat.id;
+
+    // send a message to the chat acknowledging receipt of their message
+    bot.sendMessage(chatId, 'Received your message');
 });
 
 app.all('/*', function (req, res, next) {
