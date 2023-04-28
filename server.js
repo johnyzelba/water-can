@@ -37,12 +37,6 @@ Object.defineProperty(Array.prototype, 'flat', {
     }
 });
 
-const chat = await bot.getChat('@qIIO_oIIp');
-console.log("----------------");
-console.log("----------------", chat);
-console.log("----------------");
-
-bot.sendMessage(chat.id, 'Hello World!');
 
 // Matches "/echo [whatever]"
 bot.onText(/\/echo (.+)/, (msg, match) => {
@@ -131,7 +125,7 @@ const db = new sqlite3.Database('/home/debian/water-can/WaterCan.db', (err) => {
     }
     console.log('CONNECTED TO DB');
 
-    app.listen(6069, (error) => {
+    app.listen(6069, async(error) => {
         if (error) {
             db.close((err) => {
                 if (err) {
@@ -142,5 +136,12 @@ const db = new sqlite3.Database('/home/debian/water-can/WaterCan.db', (err) => {
             return error;
         }
         console.log("SERVER IS RUNNING");
+
+        const chat = await bot.getChat('@qIIO_oIIp');
+        console.log("----------------");
+        console.log("----------------", chat);
+        console.log("----------------");
+
+        bot.sendMessage(chat.id, 'Hello World!');
     });
 });
