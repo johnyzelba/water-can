@@ -6,6 +6,7 @@ const cron = require('node-cron');
 const sqlite3 = require('sqlite3').verbose();
 const app = express();
 const path = require('path');
+const { sendMsgToUser } = require('../utils/telegramBot');
 
 const { getDataFromRouterAndSave, getRouterIps } = require("./router/router");
 const { generateTasksIfNeeded, runTaskIfNeeded } = require("./tasks/tasks");
@@ -108,6 +109,7 @@ const db = new sqlite3.Database('/home/debian/water-can/WaterCan.db', (err) => {
             return error;
         }
         console.log("SERVER IS RUNNING");
-        bot.sendMessage(chatId, 'Hello World! 1');
+        sendMsgToUser(`Server started`);
+
     });
 });
