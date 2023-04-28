@@ -10,4 +10,4 @@ const sendMsgToUser = async (msg) => {
     await bot.sendMessage(chatId, msg);
 }
 
-module.exports = [ sendMsgToUser ];
+module.exports = { sendMsgToUser };
