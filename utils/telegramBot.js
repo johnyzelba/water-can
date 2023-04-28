@@ -8,7 +8,7 @@ const bot = new TelegramBot(token, { polling: true });
 
 const sendMsgToUser = async (msg) => {
     const now = new Date().toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem' });
-    await bot.sendMessage(chatId, `*bold*${now}*bold*  ${msg}`);
+    await bot.sendMessage(chatId, `*bold*${now}*bold*  ${msg}`, { parseMode: 'Markdown' });
 }
 
 module.exports = { sendMsgToUser };
