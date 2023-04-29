@@ -194,59 +194,64 @@ const runTaskIfNeeded = async (db) => {
                 return;
             }
 
-            const taskPromises = tasks.map(runningTask => new Promise(async (res, rej) => {
+            const validateTaskskPromises = tasks.map( runningTask => new Promise(async (res, rej) => {
                 const latestPlantReport = (await getLatestPlantsReports(db, [{ id: runningTask.plantId }]))[0];
                 if (!latestPlantReport) {
-                    return rej("RUN_CANCELED");
+                    return rej("NOT_VALID");
                 }
                 const plant = (await getPlant(db, runningTask.plantId))[0];
                 if (!plant) {
-                    return rej("RUN_CANCELED");
+                    return rej("NOT_VALID");
                 }
                 const isWaterCanInPlace = await checkWaterCanPosition();
                 if (!isWaterCanInPlace) {
-                    return rej("RUN_CANCELED");
+                    return rej("NOT_VALID");
                 }
                 const isWaterCanEnmpty = (await amountOfLiquidInWaterCan()) < EMPTY_WATER_CAN_SENSOR_VALUE;
                 if (!isWaterCanEnmpty) {
-                    return rej("RUN_CANCELED");
+                    return rej("NOT_VALID");
                 }
 
                 if (latestPlantReport.soilMoisture < SOIL_MOISTURE_WATERING_THRESHOLD) {
-                    console.log(`RUNNING TASK ID: ${runningTask.id}`);
-                    sendMsgToUser(`Filling water can for plant: ${plant.name }(${plant.id})`);
-                    // await updateTaskStatus(db, runningTask.id, "IN_PROGRESS");
-
-                    await fillWaterCan(plant.potSize);
-                    await addNutritions(plant.potSize, plant.n, plant.p, plant.k);
-                    
-                    // await updateTaskStatus(db, runningTask.id, "DONE");
-                    sendMsgToUser(`Finnished filling water can for plant: ${plant.name}(${plant.id})`);
-
-                    return res("RUN_FINNISHED_SUCCSESSFULY");
+                    console.log(`VALIDATION_FINNISHED_SUCCSESSFULY`);
+                    return res({
+                        task: runningTask,
+                        plant
+                    });
                 } else {
                     console.log(`PLANT DON'T NEED WATERING`);
                     // TODO: remove task
-                    return rej("RUN_CANCELED");
+                    return rej("NOT_VALID");
                 }
             }));
 
-            let isTaskInProgres = false;
-            let res;
+            const validatedTasksIdsPlants = [];
 
-            taskPromises.forEach(async taskPromise => {
+            validateTaskskPromises.forEach(async validateTaskPromise => {
                 try {
-                    if (!isTaskInProgres) {
-                        res = await taskPromise;
-                        isTaskInProgres = true;
-                    }
-                } catch(e) {
-                    console.log("-------------e: ", e);
-                    if ( e === "RUN_CANCELED") {
-                        isTaskInProgres = false;
-                    }
+                    const taskIdPlant = await validateTaskPromise();
+                    validatedTasksIds.push(taskIdPlant);
+                } catch (e) {
+                    console.log(e);
+                    // TODO handle
                 }
             });
+
+            const runningTaskRes = await new Promise(async (res, rej) => {
+                console.log(`RUNNING TASK ID: ${validatedTasksIdsPlants[0].task.id}`);
+                sendMsgToUser(`Filling water can for plant: ${validatedTasksIdsPlants[0].plant.name}(${validatedTasksIdsPlants[0].plant.id})`);
+                // await updateTaskStatus(db, runningTask.id, "IN_PROGRESS");
+
+                await fillWaterCan(validatedTasksIdsPlants[0].potSize);
+                await addNutritions(validatedTasksIdsPlants[0].plant.potSize, validatedTasksIdsPlants[0].plant.n, validatedTasksIdsPlants[0].plant.p, validatedTasksIdsPlants[0].plant.k);
+
+                // await updateTaskStatus(db, runningTask.id, "DONE");
+                sendMsgToUser(`Finnished filling water can for plant: ${validatedTasksIdsPlants[0].plant.name}(${validatedTasksIdsPlants[0].plant.id})`);
+
+                return res("RUN_FINNISHED_SUCCSESSFULY");
+            });
+            
+            console.log(runningTaskRes);
         });
     }
     catch (e) {
