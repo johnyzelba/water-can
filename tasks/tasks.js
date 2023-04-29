@@ -230,12 +230,16 @@ const runTaskIfNeeded = async (db) => {
                 }
             }));
 
-            const validatedTasksIdsPlants = [];
-
+            
+            let  res;
             try {
-            const res = await promise.all(validateTaskskPromises);
+                res = await promise.all(validateTaskskPromises);
             } catch (e) {
-                console.log(e);
+                if (e === "NOT-VALID") {
+                    // do nothing?
+                } else{
+                    console.log(e);
+                }
             }
             console.log("---------------res:  ", res);
             // try {
