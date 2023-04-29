@@ -194,50 +194,52 @@ const runTaskIfNeeded = async (db) => {
                 return;
             }
 
-            const validateTaskskPromises = tasks.map( runningTask => new Promise(async (res, rej) => {
-                try {
-                    const latestPlantReport = (await getLatestPlantsReports(db, [{ id: runningTask.plantId }]))[0];
-                    if (!latestPlantReport) {
-                        return rej("NOT_VALID");
-                    }
-                    const plant = (await getPlant(db, runningTask.plantId))[0];
-                    if (!plant) {
-                        return rej("NOT_VALID");
-                    }
-                    const isWaterCanInPlace = await checkWaterCanPosition();
-                    if (!isWaterCanInPlace) {
-                        return rej("NOT_VALID");
-                    }
-                    const isWaterCanEnmpty = (await amountOfLiquidInWaterCan()) < EMPTY_WATER_CAN_SENSOR_VALUE;
-                    if (!isWaterCanEnmpty) {
-                        return rej("NOT_VALID");
-                    }
+            const validateTaskskPromises = tasks.map(runningTask => new Promise(async (res, rej) => {
+                (async () => {
+                    try {
+                        const latestPlantReport = (await getLatestPlantsReports(db, [{ id: runningTask.plantId }]))[0];
+                        if (!latestPlantReport) {
+                            return rej("NOT_VALID");
+                        }
+                        const plant = (await getPlant(db, runningTask.plantId))[0];
+                        if (!plant) {
+                            return rej("NOT_VALID");
+                        }
+                        const isWaterCanInPlace = await checkWaterCanPosition();
+                        if (!isWaterCanInPlace) {
+                            return rej("NOT_VALID");
+                        }
+                        const isWaterCanEnmpty = (await amountOfLiquidInWaterCan()) < EMPTY_WATER_CAN_SENSOR_VALUE;
+                        if (!isWaterCanEnmpty) {
+                            return rej("NOT_VALID");
+                        }
 
-                    if (latestPlantReport.soilMoisture < SOIL_MOISTURE_WATERING_THRESHOLD) {
-                        console.log(`VALIDATION_FINNISHED_SUCCSESSFULY`);
-                        return res({
-                            task: runningTask,
-                            plant
-                        });
-                    } else {
-                        console.log(`PLANT DON'T NEED WATERING`);
-                        // TODO: remove task
-                        return rej("NOT_VALID");
+                        if (latestPlantReport.soilMoisture < SOIL_MOISTURE_WATERING_THRESHOLD) {
+                            console.log(`VALIDATION_FINNISHED_SUCCSESSFULY`);
+                            return res({
+                                task: runningTask,
+                                plant
+                            });
+                        } else {
+                            console.log(`PLANT DON'T NEED WATERING`);
+                            // TODO: remove task
+                            return rej("NOT_VALID");
+                        }
+                    } catch (e) {
+                        return rej(e);
+                        // TODO handle
                     }
-                } catch (e) {
-                    return rej(e);
-                    // TODO handle
-                }
+                })
             }));
 
-            
-            let  res;
+
+            let res;
             try {
                 res = await promise.all(validateTaskskPromises);
             } catch (e) {
                 if (e === "NOT-VALID") {
                     // do nothing?
-                } else{
+                } else {
                     console.log(e);
                 }
             }
