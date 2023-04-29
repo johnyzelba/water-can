@@ -195,7 +195,7 @@ const runTaskIfNeeded = async (db) => {
             }
             console.log("---------------validateTasks:  ", tasks);
             const validTasks = [];
-            for (const runningTask in tasks) {
+            for (const runningTask of tasks) {
                     try {
                         const latestPlantReport = (await getLatestPlantsReports(db, [{ id: runningTask.plantId }]))[0];
                         if (!latestPlantReport) {
