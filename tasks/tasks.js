@@ -194,7 +194,7 @@ const runTaskIfNeeded = async (db) => {
                 return;
             }
 
-            const validateTaskskPromises = tasks.map(runningTask => new Promise(async (res, rej) => {
+            const validateTaskskPromises = tasks.map(runningTask => new Promise((res, rej) => {
                 (async () => {
                     try {
                         const latestPlantReport = (await getLatestPlantsReports(db, [{ id: runningTask.plantId }]))[0];
