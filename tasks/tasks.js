@@ -194,7 +194,7 @@ const runTaskIfNeeded = async (db) => {
                 return;
             }
             console.log("---------------validateTasks:  ", tasks);
-            const validateTasks = [];
+            const validTasks = [];
             for (const runningTask in tasks) {
                     try {
                         const latestPlantReport = (await getLatestPlantsReports(db, [{ id: runningTask.plantId }]))[0];
@@ -216,9 +216,10 @@ const runTaskIfNeeded = async (db) => {
 
                         if (latestPlantReport.soilMoisture < SOIL_MOISTURE_WATERING_THRESHOLD) {
                             console.log(`VALIDATION_FINNISHED_SUCCSESSFULY`);
-                            validateTasks.push({
+                            validTasks.push({
                                 task: runningTask,
-                                plant
+                                plant,
+                                test: "test"
                             });
                         } else {
                             console.log(`PLANT DON'T NEED WATERING`);
@@ -226,12 +227,12 @@ const runTaskIfNeeded = async (db) => {
                             throw "NOT_VALID";
                         }
                     } catch (e) {
-                        return rej(e);
+                        console.log("---------------validation error:  ", e);
                         // TODO handle
                     }
             };
 
-            console.log("---------------validateTasks:  ", validateTasks);
+            console.log("---------------validTasks:  ", validTasks);
             // try {
             //     const runningTaskRes = await new Promise(async (res, rej) => {
             //         try {
