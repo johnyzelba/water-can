@@ -195,7 +195,7 @@ const runTaskIfNeeded = async (db) => {
             }
 
             const validateTaskskPromises = tasks.map(runningTask => new Promise((res, rej) => {
-                (async () => {
+                return (async () => {
                     try {
                         const latestPlantReport = (await getLatestPlantsReports(db, [{ id: runningTask.plantId }]))[0];
                         if (!latestPlantReport) {
