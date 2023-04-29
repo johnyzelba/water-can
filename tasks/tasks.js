@@ -235,7 +235,7 @@ const runTaskIfNeeded = async (db) => {
 
             let res;
             try {
-                res = await promise.all(validateTaskskPromises);
+                res = await Promise.all(validateTaskskPromises);
             } catch (e) {
                 if (e === "NOT-VALID") {
                     // do nothing?
