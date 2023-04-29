@@ -21,6 +21,7 @@ potassiumPump.writeSync(1);
 stirrer.writeSync(1);
 
 const SOIL_MOISTURE_WATERING_THRESHOLD = 15;
+const EMPTY_WATER_CAN_SENSOR_VALUE = 5;
 
 const getPlantsPendingAndInProgressTasks = async (db, plantReports) => {
     console.log(`GETTING PENDING AND IN_PROGRESS TASKS FROM DB`);
@@ -195,7 +196,6 @@ const runTaskIfNeeded = async (db) => {
 
             const taskPromises = tasks.map(runningTask => new Promise(async (res, rej) => {
                 const latestPlantReport = (await getLatestPlantsReports(db, [{ id: runningTask.plantId }]))[0];
-                console.log(latestPlantReport, runningTask.plantId);
                 if (!latestPlantReport) {
                     rej();
                 }
@@ -203,6 +203,15 @@ const runTaskIfNeeded = async (db) => {
                 if (!plant) {
                     rej();
                 }
+                const isWaterCanInPlace = await checkWaterCanPosition();
+                if (!isWaterCanInPlace) {
+                    rej();
+                }
+                const isWaterCanEnmpty = (await amountOfLiquidInWaterCan()) < EMPTY_WATER_CAN_SENSOR_VALUE;
+                if (!isWaterCanEnmpty) {
+                    rej();
+                }
+
                 if (latestPlantReport.soilMoisture < SOIL_MOISTURE_WATERING_THRESHOLD) {
                     console.log(`RUNNING TASK ID: ${runningTask.id}`);
                     sendMsgToUser(`Filling water can for plant: ${plant.name }(${plant.id})`);
@@ -210,7 +219,6 @@ const runTaskIfNeeded = async (db) => {
 
                     await fillWaterCan(plant.potSize);
                     await addNutritions(plant.potSize, plant.n, plant.p, plant.k);
-                    await notify(plant.id, plant.name);
                     
                     // await updateTaskStatus(db, runningTask.id, "DONE");
                     sendMsgToUser(`Finnished filling water can for plant: ${plant.name}(${plant.id})`);
@@ -226,7 +234,7 @@ const runTaskIfNeeded = async (db) => {
             const index = 0;
             let res;
             while (index < taskPromises.length -1) {
-                res = await taskPromises[index].catch(e => index++);
+                res = (await taskPromises[index]).catch(e => index++);
                 index = taskPromises.length - 1;
             }
         });
@@ -239,14 +247,28 @@ const runTaskIfNeeded = async (db) => {
     return true;
 };
 
+const checkWaterCanPosition = async () => {
+    console.log(`CHECKING IF WATER CAN IS IN PLACE`);
+    // TODO: implement
+    await new Promise((res, rej) => setTimeout(() => res(), 2000));
+};
+
+const amountOfLiquidInWaterCan = async () => {
+    console.log(`CHECKING THE AMOUNT OF LIQUID IN THE WATER CAN`);
+    // TODO: implement
+    await new Promise((res, rej) => setTimeout(() => res(2), 2000));
+};
+
 const fillWaterCan = async (potSize) => {
     console.log(`FILLING WATER CAN WITH WATER`);
+    // TODO: implement
     waterSelanoid.writeSync(0);
     await new Promise((res, rej) => setTimeout(() => res(waterSelanoid.writeSync(1)), 2000));
 };
 
 const addNutritions = async (potSize, nitrogen, phosphorus, potassium) => {
     console.log(`ADDING NUTRIENTS TO WATER CAN`);
+    // TODO: implement
     nitrogenPump.writeSync(0);
     await new Promise((res, rej) => setTimeout(() => res(nitrogenPump.writeSync(1)), 2000));
 
@@ -259,10 +281,6 @@ const addNutritions = async (potSize, nitrogen, phosphorus, potassium) => {
     console.log(`STIRRING WATER CAN`);
     stirrer.writeSync(0);
     await new Promise((res, rej) => setTimeout(() => res(stirrer.writeSync(1)), 2000));
-};
-
-const notify = async (plantId, plantName) => {
-    console.log(`WATER CAN FOR ${plantName}(${plantId}) IS READY!`);
 };
 
 module.exports = { generateTasksIfNeeded, runTaskIfNeeded };
