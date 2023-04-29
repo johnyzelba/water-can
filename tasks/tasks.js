@@ -189,11 +189,11 @@ const generateTasksIfNeeded = async (db,) => {
 const runTaskIfNeeded = async (db) => {
     try {
         await db.serialize(async () => {
+            console.log("VALIDATING TASKS");
             const tasks = await getPendingTasks(db);
             if (!tasks || !tasks.length) {
                 return;
             }
-            console.log("---------------validateTasks:  ", tasks);
             const validTasks = [];
             for (const runningTask of tasks) {
                     try {
@@ -205,15 +205,6 @@ const runTaskIfNeeded = async (db) => {
                         if (!plant) {
                             throw "NOT_VALID";
                         }
-                        const isWaterCanInPlace = await checkWaterCanPosition();
-                        if (!isWaterCanInPlace) {
-                            throw "NOT_VALID";
-                        }
-                        const isWaterCanEnmpty = (await amountOfLiquidInWaterCan()) < EMPTY_WATER_CAN_SENSOR_VALUE;
-                        if (!isWaterCanEnmpty) {
-                            throw "NOT_VALID";
-                        }
-
                         if (latestPlantReport.soilMoisture < SOIL_MOISTURE_WATERING_THRESHOLD) {
                             console.log(`VALIDATION_FINNISHED_SUCCSESSFULY`);
                             validTasks.push({
@@ -232,30 +223,32 @@ const runTaskIfNeeded = async (db) => {
                     }
             };
 
-            console.log("---------------validTasks:  ", validTasks);
-            // try {
-            //     const runningTaskRes = await new Promise(async (res, rej) => {
-            //         try {
-            //             console.log(`RUNNING TASK ID: ${validatedTasksIdsPlants[0].task.id}`);
-            //             sendMsgToUser(`Filling water can for plant: ${validatedTasksIdsPlants[0].plant.name}(${validatedTasksIdsPlants[0].plant.id})`);
-            //             // await updateTaskStatus(db, runningTask.id, "IN_PROGRESS");
+            console.log("VALIDATING WATER CAN");
+            const isWaterCanInPlace = await checkWaterCanPosition();
+            if (!isWaterCanInPlace) {
+                throw "NOT_VALID";
+            }
+            const isWaterCanEnmpty = (await amountOfLiquidInWaterCan()) < EMPTY_WATER_CAN_SENSOR_VALUE;
+            if (!isWaterCanEnmpty) {
+                throw "NOT_VALID";
+            }
 
-            //             await fillWaterCan(validatedTasksIdsPlants[0].potSize);
-            //             await addNutritions(validatedTasksIdsPlants[0].plant.potSize, validatedTasksIdsPlants[0].plant.n, validatedTasksIdsPlants[0].plant.p, validatedTasksIdsPlants[0].plant.k);
+            try {
+                console.log(`RUNNING TASK ID: ${validTasks[0].plant.name}(${validTasks[0].task.id})`);
+                    sendMsgToUser(`Filling water can for plant: ${validTasks[0].plant.name}(${validTasks[0].plant.id})`);
+                    // await updateTaskStatus(db, runningTask.id, "IN_PROGRESS");
 
-            //             // await updateTaskStatus(db, runningTask.id, "DONE");
-            //             sendMsgToUser(`Finnished filling water can for plant: ${validatedTasksIdsPlants[0].plant.name}(${validatedTasksIdsPlants[0].plant.id})`);
+                    await fillWaterCan(validTasks[0].plant.potSize);
+                    await addNutritions(validTasks[0].plant.potSize, validTasks[0].plant.n, validTasks[0].plant.p, validTasks[0].plant.k);
 
-            //             return res("RUN_FINNISHED_SUCCSESSFULY");
-            //         } catch (e) {
-            //             return rej(e);
-            //             // TODO handle
-            //         }
-            //     });
-            // } catch (e) {
-            //     console.log(e);
-            // }
-            // console.log(runningTaskRes);
+                    // await updateTaskStatus(db, runningTask.id, "DONE");
+                    sendMsgToUser(`Finnished filling water can for plant: ${validTasks[0].plant.name}(${validTasks[0].plant.id})`);
+
+                console.log("RUN_FINNISHED_SUCCSESSFULY");
+
+            } catch (e) {
+                console.log(e);
+            }
         });
     }
     catch (e) {
