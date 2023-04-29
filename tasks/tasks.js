@@ -197,19 +197,19 @@ const runTaskIfNeeded = async (db) => {
             const taskPromises = tasks.map(runningTask => new Promise(async (res, rej) => {
                 const latestPlantReport = (await getLatestPlantsReports(db, [{ id: runningTask.plantId }]))[0];
                 if (!latestPlantReport) {
-                    rej();
+                    rej("RUN_CANCELED");
                 }
                 const plant = (await getPlant(db, runningTask.plantId))[0];
                 if (!plant) {
-                    rej();
+                    rej("RUN_CANCELED");
                 }
                 const isWaterCanInPlace = await checkWaterCanPosition();
                 if (!isWaterCanInPlace) {
-                    rej();
+                    rej("RUN_CANCELED");
                 }
                 const isWaterCanEnmpty = (await amountOfLiquidInWaterCan()) < EMPTY_WATER_CAN_SENSOR_VALUE;
                 if (!isWaterCanEnmpty) {
-                    rej();
+                    rej("RUN_CANCELED");
                 }
 
                 if (latestPlantReport.soilMoisture < SOIL_MOISTURE_WATERING_THRESHOLD) {
@@ -223,20 +223,28 @@ const runTaskIfNeeded = async (db) => {
                     // await updateTaskStatus(db, runningTask.id, "DONE");
                     sendMsgToUser(`Finnished filling water can for plant: ${plant.name}(${plant.id})`);
 
-                    res();
+                    res("RUN_FINNISHED_SUCCSESSFULY");
                 } else {
                     console.log(`PLANT DON'T NEED WATERING`);
                     // TODO: remove task
-                    rej();
+                    rej("RUN_CANCELED");
                 }
             }));
 
-            const index = 0;
+            const isTaskInProgres = false;
             let res;
-            while (index < taskPromises.length -1) {
-                res = (await taskPromises[index]).catch(e => index++);
-                index = taskPromises.length - 1;
-            }
+
+            taskPromises.forEach(async taskPromise => {
+                try {
+                    if (!isTaskInProgres) {
+                        res = await taskPromise;
+                        isTaskInProgres = true;
+                    }
+                } catch(e) {
+                    console.log("-------------e: ", e);
+                    isTaskInProgres = false;
+                }
+            });
         });
     }
     catch (e) {
