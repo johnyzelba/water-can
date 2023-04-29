@@ -265,7 +265,7 @@ const runTaskIfNeeded = async (db) => {
 const checkWaterCanPosition = async () => {
     console.log(`CHECKING IF WATER CAN IS IN PLACE`);
     // TODO: implement
-    await new Promise((res, rej) => setTimeout(() => res(), 2000));
+    await new Promise((res, rej) => setTimeout(() => res(true), 2000));
 };
 
 const amountOfLiquidInWaterCan = async () => {
