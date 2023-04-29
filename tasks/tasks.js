@@ -193,58 +193,45 @@ const runTaskIfNeeded = async (db) => {
             if (!tasks || !tasks.length) {
                 return;
             }
-
-            const validateTaskskPromises = tasks.map(runningTask => new Promise((res, rej) => {
-                return (async () => {
+            console.log("---------------validateTasks:  ", tasks);
+            const validateTasks = [];
+            for (const runningTask in tasks) {
                     try {
                         const latestPlantReport = (await getLatestPlantsReports(db, [{ id: runningTask.plantId }]))[0];
                         if (!latestPlantReport) {
-                            return rej("NOT_VALID");
+                            throw "NOT_VALID";
                         }
                         const plant = (await getPlant(db, runningTask.plantId))[0];
                         if (!plant) {
-                            return rej("NOT_VALID");
+                            throw "NOT_VALID";
                         }
                         const isWaterCanInPlace = await checkWaterCanPosition();
                         if (!isWaterCanInPlace) {
-                            return rej("NOT_VALID");
+                            throw "NOT_VALID";
                         }
                         const isWaterCanEnmpty = (await amountOfLiquidInWaterCan()) < EMPTY_WATER_CAN_SENSOR_VALUE;
                         if (!isWaterCanEnmpty) {
-                            return rej("NOT_VALID");
+                            throw "NOT_VALID";
                         }
 
                         if (latestPlantReport.soilMoisture < SOIL_MOISTURE_WATERING_THRESHOLD) {
                             console.log(`VALIDATION_FINNISHED_SUCCSESSFULY`);
-                            return res({
+                            validateTasks.push({
                                 task: runningTask,
                                 plant
                             });
                         } else {
                             console.log(`PLANT DON'T NEED WATERING`);
                             // TODO: remove task
-                            return rej("NOT_VALID");
+                            throw "NOT_VALID";
                         }
                     } catch (e) {
                         return rej(e);
                         // TODO handle
                     }
-                })
-            }));
+            };
 
-
-            let res;
-            console.log(validateTaskskPromises);
-            try {
-                res = await Promise.all(validateTaskskPromises);
-                console.log("---------------res:  ", res);
-            } catch (e) {
-                if (e === "NOT-VALID") {
-                    // do nothing?
-                } else {
-                    console.log(e);
-                }
-            }
+            console.log("---------------validateTasks:  ", validateTasks);
             // try {
             //     const runningTaskRes = await new Promise(async (res, rej) => {
             //         try {
