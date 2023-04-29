@@ -197,19 +197,19 @@ const runTaskIfNeeded = async (db) => {
             const taskPromises = tasks.map(runningTask => new Promise(async (res, rej) => {
                 const latestPlantReport = (await getLatestPlantsReports(db, [{ id: runningTask.plantId }]))[0];
                 if (!latestPlantReport) {
-                    rej("RUN_CANCELED");
+                    return rej("RUN_CANCELED");
                 }
                 const plant = (await getPlant(db, runningTask.plantId))[0];
                 if (!plant) {
-                    rej("RUN_CANCELED");
+                    return rej("RUN_CANCELED");
                 }
                 const isWaterCanInPlace = await checkWaterCanPosition();
                 if (!isWaterCanInPlace) {
-                    rej("RUN_CANCELED");
+                    return rej("RUN_CANCELED");
                 }
                 const isWaterCanEnmpty = (await amountOfLiquidInWaterCan()) < EMPTY_WATER_CAN_SENSOR_VALUE;
                 if (!isWaterCanEnmpty) {
-                    rej("RUN_CANCELED");
+                    return rej("RUN_CANCELED");
                 }
 
                 if (latestPlantReport.soilMoisture < SOIL_MOISTURE_WATERING_THRESHOLD) {
@@ -223,15 +223,15 @@ const runTaskIfNeeded = async (db) => {
                     // await updateTaskStatus(db, runningTask.id, "DONE");
                     sendMsgToUser(`Finnished filling water can for plant: ${plant.name}(${plant.id})`);
 
-                    res("RUN_FINNISHED_SUCCSESSFULY");
+                    return res("RUN_FINNISHED_SUCCSESSFULY");
                 } else {
                     console.log(`PLANT DON'T NEED WATERING`);
                     // TODO: remove task
-                    rej("RUN_CANCELED");
+                    return rej("RUN_CANCELED");
                 }
             }));
 
-            const isTaskInProgres = false;
+            let isTaskInProgres = false;
             let res;
 
             taskPromises.forEach(async taskPromise => {
@@ -242,7 +242,9 @@ const runTaskIfNeeded = async (db) => {
                     }
                 } catch(e) {
                     console.log("-------------e: ", e);
-                    isTaskInProgres = false;
+                    if ( e === "RUN_CANCELED") {
+                        isTaskInProgres = false;
+                    }
                 }
             });
         });
