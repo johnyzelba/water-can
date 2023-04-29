@@ -269,13 +269,13 @@ const runTaskIfNeeded = async (db) => {
 const checkWaterCanPosition = async () => {
     console.log(`CHECKING IF WATER CAN IS IN PLACE`);
     // TODO: implement
-    await new Promise((res, rej) => setTimeout(() => res(true), 2000));
+    return await new Promise((res, rej) => setTimeout(() => res(true), 2000));
 };
 
 const amountOfLiquidInWaterCan = async () => {
     console.log(`CHECKING THE AMOUNT OF LIQUID IN THE WATER CAN`);
     // TODO: implement
-    await new Promise((res, rej) => setTimeout(() => res(2), 2000));
+    return await new Promise((res, rej) => setTimeout(() => res(2), 2000));
 };
 
 const fillWaterCan = async (potSize) => {
@@ -283,6 +283,7 @@ const fillWaterCan = async (potSize) => {
     // TODO: implement
     waterSelanoid.writeSync(0);
     await new Promise((res, rej) => setTimeout(() => res(waterSelanoid.writeSync(1)), 2000));
+    return;
 };
 
 const addNutritions = async (potSize, nitrogen, phosphorus, potassium) => {
@@ -300,6 +301,7 @@ const addNutritions = async (potSize, nitrogen, phosphorus, potassium) => {
     console.log(`STIRRING WATER CAN`);
     stirrer.writeSync(0);
     await new Promise((res, rej) => setTimeout(() => res(stirrer.writeSync(1)), 2000));
+    return;
 };
 
 module.exports = { generateTasksIfNeeded, runTaskIfNeeded };
