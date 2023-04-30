@@ -199,26 +199,25 @@ const runTaskIfNeeded = async (db) => {
                     try {
                         const latestPlantReport = (await getLatestPlantsReports(db, [{ id: runningTask.plantId }]))[0];
                         if (!latestPlantReport) {
-                            throw "NOT_VALID";
+                            throw "PLANT HAS NO REPORTS";
                         }
                         const plant = (await getPlant(db, runningTask.plantId))[0];
                         if (!plant) {
-                            throw "NOT_VALID";
+                            throw "PLANT DON'T EXIST";
                         }
                         if (latestPlantReport.soilMoisture < SOIL_MOISTURE_WATERING_THRESHOLD) {
-                            console.log(`VALIDATION_FINNISHED_SUCCSESSFULY`);
+                            console.log(`TASK VALIDATION FINNISHED SUCCSESSFULY`);
                             validTasks.push({
                                 task: runningTask,
                                 plant,
                                 test: "test"
                             });
                         } else {
-                            console.log(`PLANT DON'T NEED WATERING`);
                             // TODO: remove task
-                            throw "NOT_VALID";
+                            throw "SOIL NOT DRY";
                         }
                     } catch (e) {
-                        console.log("---------------validation error:  ", e);
+                        console.log("VALIDATION FAILED:  ", e);
                         // TODO handle
                     }
             };
@@ -244,7 +243,7 @@ const runTaskIfNeeded = async (db) => {
                     // await updateTaskStatus(db, runningTask.id, "DONE");
                     sendMsgToUser(`Finnished filling water can for plant: ${validTasks[0].plant.name}(${validTasks[0].plant.id})`);
 
-                console.log("RUN_FINNISHED_SUCCSESSFULY");
+                console.log("TASK FINNISHED SUCCSESSFULY");
 
             } catch (e) {
                 console.log(e);
