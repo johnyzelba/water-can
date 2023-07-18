@@ -37,7 +37,6 @@ const measureUltraSonic = async () => {
         const pp = process.hrtime(time);
         //calculate the distance in cm
         waterLevel = (pp[0] + pp[1] / 1000000000) * 17150;
-        console.log("----------waterLevel", waterLevel);
     });
 };
 
@@ -285,6 +284,7 @@ const flowAmount = async () => {
 const fillWaterCan = async (potSize) => {
     console.log(`FILLING WATER CAN WITH WATER`);
     const neededAmountOfWater = calcNeededAmountOfWater(potSize);
+    const currentAmountOfLiquidInWaterCan = neededAmountOfWater - waterLevel;
     const startTime = new Date();
     let currentTime = new Date();
     let diffMins = 0;
