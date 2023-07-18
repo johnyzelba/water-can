@@ -37,6 +37,7 @@ const measureUltraSonic = async () => {
         const pp = process.hrtime(time);
         //calculate the distance in cm
         waterLevel = (pp[0] + pp[1] / 1000000000) * 17150;
+        console.log("-------waterLevel", waterLevel);
     });
 };
 
@@ -274,13 +275,8 @@ const amountOfLiquidInWaterCan = async () => {
     console.log(`CHECKING THE AMOUNT OF LIQUID IN THE WATER CAN`);
     // TODO: implement
 
-    measureUltraSonic();
-    return await new Promise((res, rej) => setTimeout(() => {
-        console.log("----------waterLevel3", waterLevel);
-        res(0);
-    }, 3000));
-
-
+    await measureUltraSonic();
+    return waterLevel;
 };
 
 const flowAmount = async () => {
