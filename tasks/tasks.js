@@ -16,6 +16,7 @@ const stirrer = new Gpio(45, 'out');
 
 const ultrasonic = new HCSR04(60, 61);
 
+
 // const ultraSonic1Trig = new Gpio(60, 'out');
 // const ultraSonic1Echo = new Gpio(61, 'in', 'falling');
 const ultraSonic2Trig = new Gpio(62, 'out');
