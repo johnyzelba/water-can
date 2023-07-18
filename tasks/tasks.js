@@ -3,7 +3,7 @@ const { getLatestPlantsReports } = require('../utils/plantReports');
 const { sendMsgToUser } = require('../utils/telegramBot');
 
 const Gpio = require('onoff').Gpio;
-const { HCSR04 } = require('HCSR04');
+const { HCSR04 } = require('hc-sr04');
 
 // The number of microseconds it takes sound to travel 1cm at 20 degrees celcius
 const MICROSECDONDS_PER_CM = 1e6 / 34321;
