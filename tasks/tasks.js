@@ -23,7 +23,7 @@ potassiumPump.writeSync(1);
 stirrer.writeSync(1);
 
 const SOIL_MOISTURE_WATERING_THRESHOLD = 15;
-const EMPTY_WATER_CAN_SENSOR_VALUE = 5;
+const EMPTY_WATER_CAN_SENSOR_VALUE = 1000;
 const MS_TO_DOSE_ONE_ML = 300;
 
 let waterLevel = 0;
