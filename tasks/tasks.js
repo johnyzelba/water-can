@@ -1,7 +1,6 @@
 const { getPlants, getPlant } = require('../utils/plants');
 const { getLatestPlantsReports } = require('../utils/plantReports');
 const { sendMsgToUser } = require('../utils/telegramBot');
-const { HCSR04 } = require('./HCSR04');
 
 const Gpio = require('onoff').Gpio;
 const PiGpio = require('pigpio').Gpio;
