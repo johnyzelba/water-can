@@ -14,7 +14,7 @@ const phosphorusPump = new Gpio(46, 'out');
 const potassiumPump = new Gpio(65, 'out');
 const stirrer = new Gpio(45, 'out');
 
-const ultrasonic = new HCSR04(27, 26);
+const ultrasonic = new HCSR04(60, 61);
 
 // const ultraSonic1Trig = new Gpio(60, 'out');
 // const ultraSonic1Echo = new Gpio(61, 'in', 'falling');
