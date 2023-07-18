@@ -1,7 +1,13 @@
 const { getPlants, getPlant } = require('../utils/plants');
 const { getLatestPlantsReports } = require('../utils/plantReports');
 const { sendMsgToUser } = require('../utils/telegramBot');
+const { HCSR04 } = require('./HCSR04');
+
 const Gpio = require('onoff').Gpio;
+const PiGpio = require('pigpio').Gpio;
+
+// The number of microseconds it takes sound to travel 1cm at 20 degrees celcius
+const MICROSECDONDS_PER_CM = 1e6 / 34321;
 
 const waterSelanoid = new Gpio(44, 'out');
 const nitrogenPump = new Gpio(26, 'out');
@@ -9,8 +15,11 @@ const phosphorusPump = new Gpio(46, 'out');
 const potassiumPump = new Gpio(65, 'out');
 const stirrer = new Gpio(45, 'out');
 
-const ultraSonic1Trig = new Gpio(60, 'out');
-const ultraSonic1Echo = new Gpio(61, 'in', 'falling');
+const trigger = new PiGpio(60, { mode: Gpio.OUTPUT });
+const echo = new PiGpio(61, { mode: Gpio.INPUT, alert: true });
+
+// const ultraSonic1Trig = new Gpio(60, 'out');
+// const ultraSonic1Echo = new Gpio(61, 'in', 'falling');
 const ultraSonic2Trig = new Gpio(62, 'out');
 const ultraSonic2Echo = new Gpio(36, 'in', 'falling');
 
@@ -28,19 +37,22 @@ const MS_TO_DOSE_ONE_ML = 300;
 
 let waterLevel = 0;
 
-const measureUltraSonic = async () => {
-    await ultraSonic1Trig.write(1);
-    setTimeout(() => ultraSonic1Trig.write(0), 0);
-    time = process.hrtime();
+const watchHCSR04 = () => {
+    let startTick;
 
-    ultraSonic1Echo.watch(() => {
-        const pp = process.hrtime(time);
-        //calculate the distance in cm
-        waterLevel = (pp[0] + pp[1] / 1000000000) * 17150;
-        console.log("-------waterLevel", waterLevel);
+    echo.on('alert', (level, tick) => {
+        if (level == 1) {
+            startTick = tick;
+        } else {
+            const endTick = tick;
+            const diff = (endTick >> 0) - (startTick >> 0); // Unsigned 32 bit arithmetic
+            waterLevel = diff / 2 / MICROSECDONDS_PER_CM
+            console.log("--------------waterLevel", waterLevel)
+        }
     });
 };
 
+watchHCSR04();
 
 
 
@@ -275,7 +287,7 @@ const amountOfLiquidInWaterCan = async () => {
     console.log(`CHECKING THE AMOUNT OF LIQUID IN THE WATER CAN`);
     // TODO: implement
 
-    await measureUltraSonic();
+    trigger.trigger(10, 1);
     return waterLevel;
 };
 
