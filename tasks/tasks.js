@@ -1,4 +1,5 @@
 const { getPlants, getPlant } = require('../utils/plants');
+const { getLatestPlantsReports } = require('../utils/plantReports');
 const { sendMsgToUser } = require('../utils/telegramBot');
 const Gpio = require('onoff').Gpio;
 
@@ -8,11 +9,12 @@ const phosphorusPump = new Gpio(46, 'out');
 const potassiumPump = new Gpio(65, 'out');
 const stirrer = new Gpio(45, 'out');
 
-const ultraSonic1Trig = new Gpio(47, 'out');
-const ultraSonic1Echo = new Gpio(27, 'in');
+const ultraSonic1Trig = new Gpio(60, 'out');
+const ultraSonic1Echo = new Gpio(61, 'in', 'falling');
 const ultraSonic2Trig = new Gpio(62, 'out');
-const ultraSonic2Echo = new Gpio(36, 'in');
-const waterFlow = new Gpio(32, 'out');
+const ultraSonic2Echo = new Gpio(36, 'in', 'falling');
+
+const waterFlow = new Gpio(32, 'in');
 
 waterSelanoid.writeSync(1);
 nitrogenPump.writeSync(1);
@@ -22,6 +24,23 @@ stirrer.writeSync(1);
 
 const SOIL_MOISTURE_WATERING_THRESHOLD = 15;
 const EMPTY_WATER_CAN_SENSOR_VALUE = 5;
+const MS_TO_DOSE_ONE_ML = 300;
+
+let waterLevel = 0;
+
+const measureUltraSonic = async () => {
+    await ultraSonic1Trig.write(1);
+    setTimeout(() => ultraSonic1Trig.write(0), 0);
+    time = process.hrtime();
+};
+
+ultraSonic1Echo.watch(() => {
+    const pp = process.hrtime(time);
+    //calculate the distance in cm
+    waterLevel = (pp[0] + pp[1] / 1000000000) * 17150;
+    console.log("----------waterLevel", waterLevel);
+});
+
 
 const getPlantsPendingAndInProgressTasks = async (db, plantReports) => {
     console.log(`GETTING PENDING AND IN_PROGRESS TASKS FROM DB`);
@@ -81,36 +100,6 @@ const getPendingTasks = async (db) => {
         timestamp: row.timestamp
     }));
 };
-
-
-
-const getLatestPlantsReports = async (db, plants) => {
-    console.log(`GETTING LATEST PLANTS REPORTS FROM DB`);
-    const plantReportRows = (await Promise.all(
-        plants.map(async plant =>
-            new Promise(function (resolve, reject) {
-                db.all(
-                    `SELECT * FROM plant_reports 
-                    WHERE plant_id = ${plant.id}
-                    ORDER BY timestamp
-                    DESC LIMIT 1`,
-                    (err, rows) => {
-                        if (err) {
-                            reject(err);
-                        }
-                        resolve(rows);
-                    }
-                )
-            })
-        )
-    )).flat(1);
-    console.log(`FOUND ${plantReportRows.length} REPORTS`);
-    return plantReportRows.map(row => ({
-        plantId: row.plant_id,
-        soilMoisture: row.soil_moisture,
-        timestamp: row.timestamp
-    }));
-}
 
 const generateTasks = async (db, plantReports) => {
     console.log(`SAVING NEW TASKS TO DB`);
@@ -192,7 +181,7 @@ const runTaskIfNeeded = async (db) => {
             console.log("VALIDATING TASKS");
             const tasks = await getPendingTasks(db);
             if (!tasks || !tasks.length) {
-                return;
+                "NO PENDING TASKS"
             }
             const validTasks = [];
             for (const runningTask of tasks) {
@@ -222,15 +211,24 @@ const runTaskIfNeeded = async (db) => {
                     }
             };
 
+            console.log(`THERE ARE ${validTasks.length} VALIDPENDING TASKS`);
+            if (!validTasks || !validTasks.length) {
+                throw "NO VALID PENDING TASKS";
+            }
+
             console.log("VALIDATING WATER CAN");
-            const isWaterCanInPlace = await checkWaterCanPosition();
-            if (!isWaterCanInPlace) {
-                throw "NOT_VALID";
+            if (!(await isWaterCanInPlace())) {
+                throw "WATER CAN NOT IN PLACE";
             }
             const isWaterCanEnmpty = (await amountOfLiquidInWaterCan()) < EMPTY_WATER_CAN_SENSOR_VALUE;
             if (!isWaterCanEnmpty) {
-                throw "NOT_VALID";
+                throw "WATER CAN NOT EMPTY";
             }
+            const isWaterFlowing = (await (flowAmount())) > 0 ;
+            if (isWaterFlowing) {
+                throw "WATER IS FLOWING BEFORE TASK STARTED";
+            }
+            console.log("WATER CAN IS VALID");
 
             try {
                 console.log(`RUNNING TASK ID: ${validTasks[0].plant.name}(${validTasks[0].task.id})`);
@@ -251,6 +249,9 @@ const runTaskIfNeeded = async (db) => {
         });
     }
     catch (e) {
+        if (e === "WATER IS FLOWING BEFORE TASK STARTED") {
+            // TODO: Serious error handling
+        }
         console.log(e);
         return false;
     }
@@ -258,10 +259,14 @@ const runTaskIfNeeded = async (db) => {
     return true;
 };
 
-const checkWaterCanPosition = async () => {
+const isWaterCanInPlace = async () => {
     console.log(`CHECKING IF WATER CAN IS IN PLACE`);
-    // TODO: implement
-    return await new Promise((res, rej) => setTimeout(() => res(true), 2000));
+    measureUltraSonic();
+    console.log("----------waterLevel2", waterLevel);
+    return await new Promise((res, rej) => setTimeout(() => {
+        console.log("----------waterLevel3", waterLevel);
+        res(true);
+    }, 3000));
 };
 
 const amountOfLiquidInWaterCan = async () => {
@@ -270,30 +275,61 @@ const amountOfLiquidInWaterCan = async () => {
     return await new Promise((res, rej) => setTimeout(() => res(2), 2000));
 };
 
+const flowAmount = async () => {
+    console.log(`CHECKING THE AMOUNT OF FLOWING WATER`);
+    return await waterFlow.readSync();
+};
+
 const fillWaterCan = async (potSize) => {
     console.log(`FILLING WATER CAN WITH WATER`);
-    // TODO: implement
-    waterSelanoid.writeSync(0);
-    await new Promise((res, rej) => setTimeout(() => res(waterSelanoid.writeSync(1)), 2000));
+    const neededAmountOfWater = calcNeededAmountOfWater(potSize);
+    const startTime = new Date();
+    let currentTime = new Date();
+    let diffMins = 0;
+    let AmountOfLiquidInWaterCanArr = [(await amountOfLiquidInWaterCan())];
+    let iterations = 0;
+
+    while (currentAmountOfLiquidInWaterCan < neededAmountOfWater || diffMins < 5) {
+        waterSelanoid.writeSync(0);
+        await new Promise((res, rej) => setTimeout(() => res(waterSelanoid.writeSync(1)), 5000));
+        currentTime= new Date();
+        diffMins = Math.round((((currentTime - startTime) % 86400000) % 3600000) / 60000);
+        AmountOfLiquidInWaterCanArr.push(await amountOfLiquidInWaterCan());
+        iterations++;
+
+        if (AmountOfLiquidInWaterCanArr[iterations] <= amountOfLiquidInWaterCanArr[iterations-1]) {
+            throw "SOMETHING'S WRONG!";
+        }
+    }
+    console.log(`FILLED WATER CAN WITH WATER SUCCESSFULLY`);
+
     return;
 };
 
 const addNutritions = async (potSize, nitrogen, phosphorus, potassium) => {
     console.log(`ADDING NUTRIENTS TO WATER CAN`);
-    // TODO: implement
-    nitrogenPump.writeSync(0);
-    await new Promise((res, rej) => setTimeout(() => res(nitrogenPump.writeSync(1)), 2000));
+    const neededAmountOfWater = calcNeededAmountOfWater(potSize);
+    const neededNitrogen = nitrogen * neededAmountOfWater;
+    const neededPhosphorus = phosphorus * neededAmountOfWater;
+    const neededPotassium = potassium * neededAmountOfWater;
+
+    nitrogenPump.writeSync(0); waterFlow
+    await new Promise((res, rej) => setTimeout(() => res(nitrogenPump.writeSync(1)), neededNitrogen * MS_TO_DOSE_ONE_ML));
 
     phosphorusPump.writeSync(0);
-    await new Promise((res, rej) => setTimeout(() => res(phosphorusPump.writeSync(1)), 2000));
+    await new Promise((res, rej) => setTimeout(() => res(phosphorusPump.writeSync(1)), neededPhosphorus * MS_TO_DOSE_ONE_ML));
 
     potassiumPump.writeSync(0);
-    await new Promise((res, rej) => setTimeout(() => res(potassiumPump.writeSync(1)), 2000));
+    await new Promise((res, rej) => setTimeout(() => res(potassiumPump.writeSync(1)), neededPotassium * MS_TO_DOSE_ONE_ML));
 
     console.log(`STIRRING WATER CAN`);
     stirrer.writeSync(0);
-    await new Promise((res, rej) => setTimeout(() => res(stirrer.writeSync(1)), 2000));
+    await new Promise((res, rej) => setTimeout(() => res(stirrer.writeSync(1)), 15000));
     return;
 };
+
+const calcNeededAmountOfWater = (potSize) => {
+    return potSize / 0.8; // TODO: real calculation
+}
 
 module.exports = { generateTasksIfNeeded, runTaskIfNeeded };

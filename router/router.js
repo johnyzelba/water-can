@@ -2,8 +2,8 @@ const axios = require('axios/dist/node/axios.cjs');
 const Evilscan = require('evilscan');
 const { toMAC } = require('@network-utils/arp-lookup');
 
-const { startTransaction, endTransaction } = require('../utils/transactions');
 const { getPlants } = require('../utils/plants');
+const { createPlantsReports } = require('../utils/plantReports');
 
 const getRouters = async (db) => {
     console.log(`GETTING ROUTERS FROM DB`);
@@ -39,16 +39,13 @@ const scanIps = async () => {
         return new Promise(function (resolve, reject) {
             const evilscan = new Evilscan(options);
 
-
             evilscan.on('result', data => {
                 // fired when item is matching options
                 list.push(data);
             });
-
             evilscan.on('error', err => {
                 reject(new Error(data.toString()));
             });
-
             evilscan.on('done', () => {
                 console.log(`FOUND ${list.length}  IP ADDRESSES WITH OPEN PORT`);
                 resolve(list);
@@ -69,6 +66,7 @@ const getMacByIps = async (ipList) => {
         const filteredMacIpsAddrs = ipList
             .map((ipObj, index) => ({ ip: ipObj.ip, mac: macAddrs[index] }))
             .filter(obj => !!obj.mac);
+
         console.log(`FOUND ${filteredMacIpsAddrs.length} MAC ADDRESSES`);
         return filteredMacIpsAddrs;
     } catch (error) {
@@ -80,6 +78,7 @@ const getDataFromRouter = async (ip) => {
     try {
         console.log(`GETTING REPORTS FROM ROUTER`);
         const response = await axios.get(`http://${ip}:6069/plants`);
+        
         if (response.data) {
             console.log(`RECIVED ${response.data.length} REPORTS`);
         }
@@ -90,87 +89,53 @@ const getDataFromRouter = async (ip) => {
 
 };
 
-const saveDataFromRouter = async (data, db) => {
-    return await new Promise(async function (resolve, reject) {
-        await db.serialize(async () => {
-            console.log(`SAVING REPORTS TO DB`);
-            return resolve(await Promise.all(
-                data.map(plantReport => {
-                    new Promise(function (resolve, reject) {
-                        if (
-                            plantReport.plantId === undefined
-                            || plantReport.temperture === undefined
-                            || plantReport.soilMoisture === undefined
-                            || plantReport.light === undefined
-                            || plantReport.soilConductivity === undefined
-                        ) {
-                            var error = new Error('Missing information');
-                            console.log(error);
-                            db.rollback();
-                            reject(error);
-                        }
-                        db.all(
-                            `INSERT INTO plant_reports (plant_id, temperture, soil_moisture, light, conductivity, timestamp)
-       
-                        VALUES (${plantReport.plantId}, ${plantReport.temperture}, ${plantReport.soilMoisture}, ${plantReport.light}, ${plantReport.soilConductivity}, CURRENT_TIMESTAMP)`,
-                            (error, rows) => {
-                                if (error) {
-                                    console.log(error);
-                                    db.rollback();
-                                    reject(error);
-                                }
-                                console.log(`SAVED SUCCESSFULLY`);
-                                resolve(rows);
-                            }
-                        );
-                    })
-                })
-            ));
-        });
-    });
-};
-
 const getDataFromRouterAndSave = async (db, routersWithIp) => {
-    const plants = await getPlants(db);
-    const promises = routersWithIp.map(routerWithIp => getDataFromRouter(routerWithIp.ip));
-    const responses = await Promise.all(promises);
-    //TODO: apply for rest of array
-    const response = responses[0];
+    try {
+        await db.serialize(async () => {
+            const plants = await getPlants(db);
+            const promises = routersWithIp.map(routerWithIp => getDataFromRouter(routerWithIp.ip));
+            const responses = await Promise.all(promises);
+            //TODO: apply for rest of array
+            const response = responses[0];
 
-    if (response.error) {
-        throw response.error;
-    }
+            if (response.error) {
+                throw response.error;
+            }
 
-    if (response.data && !response.data.length) {
+            if (response.data && !response.data.length) {
+                return false;
+            }
+
+            const dataToSave = response.data.map(dataElement => {
+                const plantId = plants.filter(plant => plant.mac === dataElement.deviceId)[0].id;
+                return ({
+                    temperture: dataElement.temperture,
+                    soilMoisture: dataElement.soilMoisture,
+                    soilConductivity: dataElement.soilConductivity,
+                    light: dataElement.light,
+                    plantId
+                })
+            })
+            const isSaved = await createPlantsReports(db, dataToSave);
+
+            return isSaved ? dataToSave : false;
+        });
+    } catch (e) {
+        console.log(e);
         return false;
     }
-
-    const dataToSave = response.data.map(dataElement => {
-        const plantId = plants.filter(plant => plant.mac === dataElement.deviceId)[0].id;
-        return ({
-            temperture: dataElement.temperture,
-            soilMoisture: dataElement.soilMoisture,
-            soilConductivity: dataElement.soilConductivity,
-            light: dataElement.light,
-            plantId
-        })
-    })
-    const isSaved = await saveDataFromRouter(dataToSave, db);
-
-    return isSaved ? dataToSave : false;
 };
 
 const getRouterIps = async (db) => {
     const ipScanRes = await scanIps();
+
     if (ipScanRes && !ipScanRes.length) {
         return false;
     }
-
     const macIpsList = await getMacByIps(ipScanRes);
     if (macIpsList && !macIpsList.length) {
         return false;
     }
-
     const routers = await getRouters(db);
     if (routers && !routers.length) {
         return false;
@@ -185,7 +150,6 @@ const getRouterIps = async (db) => {
             }
         })
     });
-
     console.log(`FOUND ${routersIps.length} ONLINE ROUTERS`);
     return routersIps;
 };
