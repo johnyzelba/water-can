@@ -32,14 +32,16 @@ const measureUltraSonic = async () => {
     await ultraSonic1Trig.write(1);
     setTimeout(() => ultraSonic1Trig.write(0), 0);
     time = process.hrtime();
+
+    ultraSonic1Echo.watch(() => {
+        const pp = process.hrtime(time);
+        //calculate the distance in cm
+        waterLevel = (pp[0] + pp[1] / 1000000000) * 17150;
+        console.log("----------waterLevel", waterLevel);
+    });
 };
 
-ultraSonic1Echo.watch(() => {
-    const pp = process.hrtime(time);
-    //calculate the distance in cm
-    waterLevel = (pp[0] + pp[1] / 1000000000) * 17150;
-    console.log("----------waterLevel", waterLevel);
-});
+
 
 
 const getPlantsPendingAndInProgressTasks = async (db, plantReports) => {
