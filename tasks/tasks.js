@@ -3,7 +3,7 @@ const { getLatestPlantsReports } = require('../utils/plantReports');
 const { sendMsgToUser } = require('../utils/telegramBot');
 
 const Gpio = require('onoff').Gpio;
-const PiGpio = require('pigpio').Gpio;
+const { HCSR04 } = require('HCSR04');
 
 // The number of microseconds it takes sound to travel 1cm at 20 degrees celcius
 const MICROSECDONDS_PER_CM = 1e6 / 34321;
@@ -14,8 +14,7 @@ const phosphorusPump = new Gpio(46, 'out');
 const potassiumPump = new Gpio(65, 'out');
 const stirrer = new Gpio(45, 'out');
 
-const trigger = new PiGpio(60, { mode: Gpio.OUTPUT });
-const echo = new PiGpio(61, { mode: Gpio.INPUT, alert: true });
+const ultrasonic = new HCSR04(27, 26);
 
 // const ultraSonic1Trig = new Gpio(60, 'out');
 // const ultraSonic1Echo = new Gpio(61, 'in', 'falling');
@@ -35,25 +34,6 @@ const EMPTY_WATER_CAN_SENSOR_VALUE = 1000;
 const MS_TO_DOSE_ONE_ML = 300;
 
 let waterLevel = 0;
-
-const watchHCSR04 = () => {
-    let startTick;
-
-    echo.on('alert', (level, tick) => {
-        if (level == 1) {
-            startTick = tick;
-        } else {
-            const endTick = tick;
-            const diff = (endTick >> 0) - (startTick >> 0); // Unsigned 32 bit arithmetic
-            waterLevel = diff / 2 / MICROSECDONDS_PER_CM
-            console.log("--------------waterLevel", waterLevel)
-        }
-    });
-};
-
-watchHCSR04();
-
-
 
 const getPlantsPendingAndInProgressTasks = async (db, plantReports) => {
     console.log(`GETTING PENDING AND IN_PROGRESS TASKS FROM DB`);
@@ -286,7 +266,9 @@ const amountOfLiquidInWaterCan = async () => {
     console.log(`CHECKING THE AMOUNT OF LIQUID IN THE WATER CAN`);
     // TODO: implement
 
-    trigger.trigger(10, 1);
+    
+    waterLevel = ultrasonic.distance();
+    console.log('Distance: ' + waterLevel);
     return waterLevel;
 };
 
