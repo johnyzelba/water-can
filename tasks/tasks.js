@@ -262,18 +262,25 @@ const runTaskIfNeeded = async (db) => {
 
 const isWaterCanInPlace = async () => {
     console.log(`CHECKING IF WATER CAN IS IN PLACE`);
-    measureUltraSonic();
-    console.log("----------waterLevel2", waterLevel);
-    return await new Promise((res, rej) => setTimeout(() => {
-        console.log("----------waterLevel3", waterLevel);
-        res(true);
-    }, 3000));
+    const maxWaterLevel = 1;
+    const minWaterLevel = -1;
+    const mesuredWaterLevel = await amountOfLiquidInWaterCan();
+    if (mesuredWaterLevel < maxWaterLevel && mesuredWaterLevel > minWaterLevel) {
+        return true;
+    }
 };
 
 const amountOfLiquidInWaterCan = async () => {
     console.log(`CHECKING THE AMOUNT OF LIQUID IN THE WATER CAN`);
     // TODO: implement
-    return await new Promise((res, rej) => setTimeout(() => res(2), 2000));
+
+    measureUltraSonic();
+    return await new Promise((res, rej) => setTimeout(() => {
+        console.log("----------waterLevel3", waterLevel);
+        res(0);
+    }, 3000));
+
+
 };
 
 const flowAmount = async () => {
@@ -284,14 +291,13 @@ const flowAmount = async () => {
 const fillWaterCan = async (potSize) => {
     console.log(`FILLING WATER CAN WITH WATER`);
     const neededAmountOfWater = calcNeededAmountOfWater(potSize);
-    const currentAmountOfLiquidInWaterCan = neededAmountOfWater - waterLevel;
     const startTime = new Date();
     let currentTime = new Date();
     let diffMins = 0;
     let amountOfLiquidInWaterCanArr = [(await amountOfLiquidInWaterCan())];
     let iterations = 0;
 
-    while (currentAmountOfLiquidInWaterCan < neededAmountOfWater || diffMins < 5) {
+    while (amountOfLiquidInWaterCanArr[iterations] < neededAmountOfWater || diffMins < 5) {
         waterSelanoid.writeSync(0);
         await new Promise((res, rej) => setTimeout(() => res(waterSelanoid.writeSync(1)), 5000));
         currentTime= new Date();
