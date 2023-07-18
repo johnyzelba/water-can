@@ -288,7 +288,7 @@ const fillWaterCan = async (potSize) => {
     const startTime = new Date();
     let currentTime = new Date();
     let diffMins = 0;
-    let AmountOfLiquidInWaterCanArr = [(await amountOfLiquidInWaterCan())];
+    let amountOfLiquidInWaterCanArr = [(await amountOfLiquidInWaterCan())];
     let iterations = 0;
 
     while (currentAmountOfLiquidInWaterCan < neededAmountOfWater || diffMins < 5) {
@@ -296,10 +296,10 @@ const fillWaterCan = async (potSize) => {
         await new Promise((res, rej) => setTimeout(() => res(waterSelanoid.writeSync(1)), 5000));
         currentTime= new Date();
         diffMins = Math.round((((currentTime - startTime) % 86400000) % 3600000) / 60000);
-        AmountOfLiquidInWaterCanArr.push(await amountOfLiquidInWaterCan());
+        amountOfLiquidInWaterCanArr.push(await amountOfLiquidInWaterCan());
         iterations++;
 
-        if (AmountOfLiquidInWaterCanArr[iterations] <= amountOfLiquidInWaterCanArr[iterations-1]) {
+        if (amountOfLiquidInWaterCanArr[iterations] <= amountOfLiquidInWaterCanArr[iterations-1]) {
             throw "SOMETHING'S WRONG!";
         }
     }
