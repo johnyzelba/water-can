@@ -13,22 +13,29 @@ const getDistance = async () => {
     console.log('2');
     triggerPin.writeSync(0);
     console.log('3');
-    let startTimeMs = hrtime.bigint();
-    let endTimeMs = hrtime.bigint();
+    // let startTimeMs = hrtime.bigint();
+    // let endTimeMs = hrtime.bigint();
 
-    while (echoPin.readSync() === 0) {
-        startTimeMs = hrtime.bigint();
-    }
+    return await new Promise(res => 
+        echoPin.on('alert', (level, tick) => {
+            console.log('alert');
+            if (level == 1) {
+                startTick = tick;
+            } else {
+                const endTick = tick;
+                const diff = (endTick >> 0) - (startTick >> 0);
+                let distance = diff / 2 / MICROSECONDS_PER_CM;
+                console.log(distance);
+                res(distance);
+            }
+        })
+    );
 
-    while (echoPin.readSync() === 1) {
-        endTimeMs = hrtime.bigint();
-    }
+    // const deltaTime = Number(endTimeMs - startTimeMs) / 1000000000;
 
-    const deltaTime = Number(endTimeMs - startTimeMs) / 1000000000;
-
-    // multiply with the sonic speed (34300 cm/s)
-    // and divide by 2, because there and back
-    return (deltaTime * 34300) / 2;
+    // // multiply with the sonic speed (34300 cm/s)
+    // // and divide by 2, because there and back
+    // return (deltaTime * 34300) / 2;
 }
 
 const validateWaterCan = async () => {
