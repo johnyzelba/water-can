@@ -14,7 +14,7 @@ const { startTransaction, endTransaction } = require('./utils/transactions');
 var b = require('bonescript');
 
 var trigger = 'P9_12',  // Pin to trigger the ultrasonic pulse
-    echo = 'P8_25',  // Pin to measure to pulse width related to the distance
+    echo = 'P9_15',  // Pin to measure to pulse width related to the distance
     ms = 250;           // Trigger period in ms
 
 var startTime, pulseTime;
