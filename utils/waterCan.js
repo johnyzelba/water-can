@@ -20,7 +20,7 @@ const getDistance = async () => {
     let endTimeMs = hrtime.bigint();
 
     return await new Promise(res => 
-        echoPin.on((err, value) => {
+        echoPin.watch((err, value) => {
             console.log('alert2 ', value);
             if (value == 1) {
                 startTimeMs = hrtime.bigint();
