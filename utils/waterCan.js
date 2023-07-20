@@ -4,10 +4,10 @@ const Gpio = require('onoff').Gpio;
 const { hrtime } = require('process');
 const triggerPin = new Gpio(60, 'out');
 triggerPin.writeSync(0);
-const echoPin = new Gpio(61, 'in', "falling");
+const echoPin = new Gpio(61, 'in', 'rising', { debounceTimeout: 10 });
 
-echoPin.watch(() => {
-    console.log('alert1');
+echoPin.watch((err, value) => {
+    console.log('alert1 ', err, value);
 });
 
 const getDistance = async () => {
@@ -16,7 +16,7 @@ const getDistance = async () => {
     let endTimeMs = hrtime.bigint();
     console.log('1');
     echoPin.watch((err, value) => {
-        console.log('alert2 ', value);
+        console.log('alert2 ', err, value);
         if (value == 1) {
             startTimeMs = hrtime.bigint();
         } else {
@@ -32,7 +32,7 @@ const getDistance = async () => {
     return await new Promise(res => {
             console.log('3');
             echoPin.watch((err, value) => {
-                console.log('alert3 ', value);
+                console.log('alert3 ', err, value);
                 if (value == 1) {
                     startTimeMs = hrtime.bigint();
                 } else {
