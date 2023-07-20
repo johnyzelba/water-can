@@ -6,9 +6,9 @@ const triggerPin = new Gpio(48, 'out');
 triggerPin.writeSync(0);
 const echoPin = new Gpio(60, 'in');
 
-const getDistance = () => {
+const getDistance = async () => {
     triggerPin.writeSync(1);
-    sleepSync(1000);
+    await new Promise(res => setTimeout(res, 1000));
     triggerPin.writeSync(0);
 
     let startTimeMs = hrtime.bigint();
