@@ -57,7 +57,7 @@ const getAmountOfLiquidInWaterCan = async () => {
     await (async () => {
         while (true) {
             console.log(`CHECKING THE AMOUNT OF LIQUID IN THE WATER CAN`);
-            const distance = getDistance();
+            const distance = await getDistance();
             console.log('Distance: ' + distance);
             const normalisedDistanceToRatio = (distance - MAX_DISTANCE_FROM_SENSOR_IN_CM) / (MIN_DISTANCE_FROM_SENSOR_IN_CM - MAX_DISTANCE_FROM_SENSOR_IN_CM);
             console.log('normalisedDistanceToRatio: ' + normalisedDistanceToRatio);
