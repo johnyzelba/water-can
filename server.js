@@ -45,7 +45,7 @@ setInterval(ping, ms);
 
 // Pull trigger low and start timing.
 function ping() {
-    // console.log('ping');
+    console.log('ping');
     b.digitalWrite(trigger, 0);
     startTime = process.hrtime();
 }
