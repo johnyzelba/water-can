@@ -1,7 +1,7 @@
 
 const { MS_TO_DOSE_ONE_ML, LITERS_TO_POT_SIZE_RATIO, MAX_LITERS_IN_WATER_CAN, MAX_DISTANCE_FROM_SENSOR_IN_CM, MIN_DISTANCE_FROM_SENSOR_IN_CM } = require('../utils/consts');
 const Gpio = require('onoff').Gpio;
-
+const { hrtime } = require('process');
 const triggerPin = new Gpio(48, 'out');
 triggerPin.writeSync(0);
 const echoPin = new Gpio(60, 'in');
