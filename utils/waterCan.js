@@ -1,57 +1,8 @@
 
 const { MS_TO_DOSE_ONE_ML, LITERS_TO_POT_SIZE_RATIO, MAX_LITERS_IN_WATER_CAN, MAX_DISTANCE_FROM_SENSOR_IN_CM, MIN_DISTANCE_FROM_SENSOR_IN_CM, MICROSECONDS_PER_CM } = require('../utils/consts');
-const Gpio = require('onoff').Gpio;
-const { hrtime } = require('process');
-const triggerPin = new Gpio(60, 'out');
-triggerPin.writeSync(0);
-const echoPin = new Gpio(61, 'in', 'rising', { debounceTimeout: 10 });
-
-echoPin.watch((err, value) => {
-    console.log('alert1 ', err, value);
-});
 
 const getDistance = async () => {
-    triggerPin.writeSync(1);
-    let startTimeMs = hrtime.bigint();
-    let endTimeMs = hrtime.bigint();
-    console.log('1');
-    echoPin.watch((err, value) => {
-        console.log('alert2 ', err, value);
-        if (value == 1) {
-            startTimeMs = hrtime.bigint();
-        } else {
-            endTimeMs = hrtime.bigint();
-            const deltaTime = Number(endTimeMs - startTimeMs) / 1000000000;
-            let distance = (deltaTime * 34300) / 2;
-            console.log(distance);
-            triggerPin.writeSync(0);
-            res(distance);
-        }
-    });
-    console.log('2');
-    return await new Promise(res => {
-            console.log('3');
-            echoPin.watch((err, value) => {
-                console.log('alert3 ', err, value);
-                if (value == 1) {
-                    startTimeMs = hrtime.bigint();
-                } else {
-                    endTimeMs = hrtime.bigint();
-                    const deltaTime = Number(endTimeMs - startTimeMs) / 1000000000;
-                    let distance = (deltaTime * 34300) / 2;
-                    console.log(distance);
-                    triggerPin.writeSync(0);
-                    res(distance);
-                }
-            });
-        }
-    );
-
-    // const deltaTime = Number(endTimeMs - startTimeMs) / 1000000000;
-
-    // // multiply with the sonic speed (34300 cm/s)
-    // // and divide by 2, because there and back
-    // return (deltaTime * 34300) / 2;
+    return 0;
 }
 
 const validateWaterCan = async () => {
