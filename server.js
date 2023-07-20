@@ -14,7 +14,7 @@ const { startTransaction, endTransaction } = require('./utils/transactions');
 var b = require('bonescript');
 
 var trigger = 'P9_12',  // Pin to trigger the ultrasonic pulse
-    echo = 'P8_26',  // Pin to measure to pulse width related to the distance
+    echo = 'P8_25',  // Pin to measure to pulse width related to the distance
     ms = 250;           // Trigger period in ms
 
 var startTime, pulseTime;
@@ -45,6 +45,7 @@ function ping() {
 
 // Compute the total time and get ready to trigger again.
 function pingEnd(x) {
+    console.log('pingEnd');
     if (x.attached) {
         console.log("Interrupt handler attached");
         return;
