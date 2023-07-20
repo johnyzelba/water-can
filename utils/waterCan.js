@@ -29,17 +29,20 @@ const isWaterCanEnmpty = async () => {
 };
 
 const getAmountOfLiquidInWaterCan = async () => {
-    while (true) {
-        console.log(`CHECKING THE AMOUNT OF LIQUID IN THE WATER CAN`);
-        const distance = ultrasonic.distance();
-        console.log('Distance: ' + distance);
-        const normalisedDistanceToRatio = (distance - MAX_DISTANCE_FROM_SENSOR_IN_CM) / (MIN_DISTANCE_FROM_SENSOR_IN_CM - MAX_DISTANCE_FROM_SENSOR_IN_CM);
-        console.log('normalisedDistanceToRatio: ' + normalisedDistanceToRatio);
+    await (async () => {
+        while (true) {
+            console.log(`CHECKING THE AMOUNT OF LIQUID IN THE WATER CAN`);
+            const distance = ultrasonic.distance();
+            console.log('Distance: ' + distance);
+            const normalisedDistanceToRatio = (distance - MAX_DISTANCE_FROM_SENSOR_IN_CM) / (MIN_DISTANCE_FROM_SENSOR_IN_CM - MAX_DISTANCE_FROM_SENSOR_IN_CM);
+            console.log('normalisedDistanceToRatio: ' + normalisedDistanceToRatio);
 
-        const amountOfLiquidInWaterCan = normalisedDistanceToRatio * MAX_LITERS_IN_WATER_CAN;
-        console.log('amountOfLiquidInWaterCan: ' + amountOfLiquidInWaterCan);
-        console.log(`---------------------------------------------`);
-    }
+            const amountOfLiquidInWaterCan = normalisedDistanceToRatio * MAX_LITERS_IN_WATER_CAN;
+            console.log('amountOfLiquidInWaterCan: ' + amountOfLiquidInWaterCan);
+            console.log(`---------------------------------------------`);
+            await new Promise((res) =>  setTimeout(() => res(true), 1000))
+        }
+    });
     // return amountOfLiquidInWaterCan;
 };
 
