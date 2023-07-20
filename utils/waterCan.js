@@ -2,15 +2,17 @@
 const { MS_TO_DOSE_ONE_ML, LITERS_TO_POT_SIZE_RATIO, MAX_LITERS_IN_WATER_CAN, MAX_DISTANCE_FROM_SENSOR_IN_CM, MIN_DISTANCE_FROM_SENSOR_IN_CM } = require('../utils/consts');
 const Gpio = require('onoff').Gpio;
 const { hrtime } = require('process');
-const triggerPin = new Gpio(48, 'out');
+const triggerPin = new Gpio(60, 'out');
 triggerPin.writeSync(0);
-const echoPin = new Gpio(60, 'in');
+const echoPin = new Gpio(48, 'in');
 
 const getDistance = async () => {
     triggerPin.writeSync(1);
-    await new Promise(res => setTimeout(res, 1000));
+    console.log('1');
+    await new Promise(res => setTimeout(() => res(), 1000));
+    console.log('2');
     triggerPin.writeSync(0);
-
+    console.log('3');
     let startTimeMs = hrtime.bigint();
     let endTimeMs = hrtime.bigint();
 
