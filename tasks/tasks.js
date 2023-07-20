@@ -1,24 +1,19 @@
 const { getPlants, getPlant } = require('../utils/plants');
 const { getLatestPlantsReports } = require('../utils/plantReports');
 const { sendMsgToUser } = require('../utils/telegramBot');
-
+const { validateWaterCan, fillWaterCan, addNutritions, resetWaterValve, getFlowAmount } = require('../utils/waterCan');
 const Gpio = require('onoff').Gpio;
-const { HCSR04 } = require('hc-sr04');
-
-// The number of microseconds it takes sound to travel 1cm at 20 degrees celcius
-const MICROSECDONDS_PER_CM = 1e6 / 34321;
+const { SOIL_MOISTURE_WATERING_THRESHOLD } = require('../utils/consts');
 
 const waterSelanoid = new Gpio(44, 'out');
 const nitrogenPump = new Gpio(26, 'out');
 const phosphorusPump = new Gpio(46, 'out');
 const potassiumPump = new Gpio(65, 'out');
 const stirrer = new Gpio(45, 'out');
-
 // const ultraSonic1Trig = new Gpio(60, 'out');
 // const ultraSonic1Echo = new Gpio(61, 'in', 'falling');
 const ultraSonic2Trig = new Gpio(62, 'out');
 const ultraSonic2Echo = new Gpio(36, 'in', 'falling');
-
 const waterFlow = new Gpio(32, 'in');
 
 waterSelanoid.writeSync(1);
@@ -26,12 +21,6 @@ nitrogenPump.writeSync(1);
 phosphorusPump.writeSync(1);
 potassiumPump.writeSync(1);
 stirrer.writeSync(1);
-
-const SOIL_MOISTURE_WATERING_THRESHOLD = 15;
-const EMPTY_WATER_CAN_SENSOR_VALUE = 1000;
-const MS_TO_DOSE_ONE_ML = 300;
-
-let waterLevel = 0;
 
 const getPlantsPendingAndInProgressTasks = async (db, plantReports) => {
     console.log(`GETTING PENDING AND IN_PROGRESS TASKS FROM DB`);
@@ -169,58 +158,17 @@ const generateTasksIfNeeded = async (db,) => {
 const runTaskIfNeeded = async (db) => {
     try {
         await db.serialize(async () => {
-            console.log("VALIDATING TASKS");
             const tasks = await getPendingTasks(db);
+            const validTasks = await validateTasks(tasks);
+
             if (!tasks || !tasks.length) {
                 "NO PENDING TASKS"
             }
-            const validTasks = [];
-            for (const runningTask of tasks) {
-                    try {
-                        const latestPlantReport = (await getLatestPlantsReports(db, [{ id: runningTask.plantId }]))[0];
-                        if (!latestPlantReport) {
-                            throw "PLANT HAS NO REPORTS";
-                        }
-                        const plant = (await getPlant(db, runningTask.plantId))[0];
-                        if (!plant) {
-                            throw "PLANT DON'T EXIST";
-                        }
-                        if (latestPlantReport.soilMoisture < SOIL_MOISTURE_WATERING_THRESHOLD) {
-                            console.log(`TASK VALIDATION FINNISHED SUCCSESSFULY`);
-                            validTasks.push({
-                                task: runningTask,
-                                plant,
-                                test: "test"
-                            });
-                        } else {
-                            // TODO: remove task
-                            throw "SOIL NOT DRY";
-                        }
-                    } catch (e) {
-                        console.log("VALIDATION FAILED:  ", e);
-                        // TODO handle
-                    }
-            };
-
-            console.log(`THERE ARE ${validTasks.length} VALIDPENDING TASKS`);
+            console.log(`THERE ARE ${tasks.length} PENDING TASKS`);
             if (!validTasks || !validTasks.length) {
                 throw "NO VALID PENDING TASKS";
             }
-
-            console.log("VALIDATING WATER CAN");
-            if (!(await isWaterCanInPlace())) {
-                throw "WATER CAN NOT IN PLACE";
-            }
-            const isWaterCanEnmpty = (await amountOfLiquidInWaterCan()) < EMPTY_WATER_CAN_SENSOR_VALUE;
-            if (!isWaterCanEnmpty) {
-                throw "WATER CAN NOT EMPTY";
-            }
-            const isWaterFlowing = (await (flowAmount())) > 0 ;
-            if (isWaterFlowing) {
-                throw "WATER IS FLOWING BEFORE TASK STARTED";
-            }
-            console.log("WATER CAN IS VALID");
-
+            await validateWaterCan();
             try {
                 console.log(`RUNNING TASK ID: ${validTasks[0].plant.name}(${validTasks[0].task.id})`);
                     sendMsgToUser(`Filling water can for plant: ${validTasks[0].plant.name}(${validTasks[0].plant.id})`);
@@ -241,7 +189,13 @@ const runTaskIfNeeded = async (db) => {
     }
     catch (e) {
         if (e === "WATER IS FLOWING BEFORE TASK STARTED") {
-            // TODO: Serious error handling
+            for (const _ of new Array(50).fill(true)) {
+                await resetWaterValve();
+                const isWaterFlowing = (await (getFlowAmount())) > 0;
+                if (isWaterFlowing) {
+                    await new Promise((res) => setTimeout(() => res(sendMsgToUser("Water is flowing before task started!!!"), 10000)));
+                }
+            }
         }
         console.log(e);
         return false;
@@ -250,79 +204,36 @@ const runTaskIfNeeded = async (db) => {
     return true;
 };
 
-const isWaterCanInPlace = async () => {
-    console.log(`CHECKING IF WATER CAN IS IN PLACE`);
-    const maxWaterLevel = 1;
-    const minWaterLevel = -1;
-    const mesuredWaterLevel = await amountOfLiquidInWaterCan();
-    if (mesuredWaterLevel < maxWaterLevel && mesuredWaterLevel > minWaterLevel) {
-        return true;
-    }
-};
+const validateTasks = async (db, tasks) => {
+    console.log("VALIDATING TASKS");
+    const validTasks = [];
+    for (const runningTask of tasks) {
+        const latestPlantReport = (await getLatestPlantsReports(db, [{ id: runningTask.plantId }]))[0];
+        const plant = (await getPlant(db, runningTask.plantId))[0];
 
-const amountOfLiquidInWaterCan = async () => {
-    console.log(`CHECKING THE AMOUNT OF LIQUID IN THE WATER CAN`);
-    const ultrasonic = new HCSR04(60, 61);
-    waterLevel = ultrasonic.distance();
-    console.log('Distance: ' + waterLevel);
-    return waterLevel;
-};
-
-const flowAmount = async () => {
-    console.log(`CHECKING THE AMOUNT OF FLOWING WATER`);
-    return await waterFlow.readSync();
-};
-
-const fillWaterCan = async (potSize) => {
-    console.log(`FILLING WATER CAN WITH WATER`);
-    const neededAmountOfWater = calcNeededAmountOfWater(potSize);
-    const startTime = new Date();
-    let currentTime = new Date();
-    let diffMins = 0;
-    let amountOfLiquidInWaterCanArr = [(await amountOfLiquidInWaterCan())];
-    let iterations = 0;
-
-    while (amountOfLiquidInWaterCanArr[iterations] < neededAmountOfWater || diffMins < 5) {
-        waterSelanoid.writeSync(0);
-        await new Promise((res, rej) => setTimeout(() => res(waterSelanoid.writeSync(1)), 5000));
-        currentTime= new Date();
-        diffMins = Math.round((((currentTime - startTime) % 86400000) % 3600000) / 60000);
-        amountOfLiquidInWaterCanArr.push(await amountOfLiquidInWaterCan());
-        iterations++;
-
-        if (amountOfLiquidInWaterCanArr[iterations] <= amountOfLiquidInWaterCanArr[iterations-1]) {
-            throw "SOMETHING'S WRONG!";
+        if (!latestPlantReport) {
+            console.log("VALIDATION FAILED: PLANT HAS NO REPORTS");
+        } else if (latestPlantReport.timestamp < new Date().getTime() - (7 * 24 * 60 * 60 * 1000)) {
+            console.log("VALIDATION FAILED: PLANT REPORT IS TO OLD");
+            sendMsgToUser(`A plant had no reports in the past week (plant id: ${runningTask.plantId})`);
+        } else if (!plant) {
+            console.log("VALIDATION FAILED: PLANT DON'T EXIST");
+        } else if (latestPlantReport.soilMoisture < SOIL_MOISTURE_WATERING_THRESHOLD) {
+            console.log(`TASK VALIDATION FINNISHED SUCCSESSFULY`);
+            validTasks.push({
+                task: runningTask,
+                plant,
+                test: "test"
+            });
+            break;
+        } else {
+            console.log("VALIDATION FAILED: PLANT SOIL IS MOIST");
         }
-    }
-    console.log(`FILLED WATER CAN WITH WATER SUCCESSFULLY`);
-
-    return;
+        await updateTaskStatus(db, runningTask.id, "ABORTED");
+    };
+    console.log(`THERE ARE ${validTasks.length} VALID TASKS`);
+    return validTasks;
 };
 
-const addNutritions = async (potSize, nitrogen, phosphorus, potassium) => {
-    console.log(`ADDING NUTRIENTS TO WATER CAN`);
-    const neededAmountOfWater = calcNeededAmountOfWater(potSize);
-    const neededNitrogen = nitrogen * neededAmountOfWater;
-    const neededPhosphorus = phosphorus * neededAmountOfWater;
-    const neededPotassium = potassium * neededAmountOfWater;
-
-    nitrogenPump.writeSync(0); waterFlow
-    await new Promise((res, rej) => setTimeout(() => res(nitrogenPump.writeSync(1)), neededNitrogen * MS_TO_DOSE_ONE_ML));
-
-    phosphorusPump.writeSync(0);
-    await new Promise((res, rej) => setTimeout(() => res(phosphorusPump.writeSync(1)), neededPhosphorus * MS_TO_DOSE_ONE_ML));
-
-    potassiumPump.writeSync(0);
-    await new Promise((res, rej) => setTimeout(() => res(potassiumPump.writeSync(1)), neededPotassium * MS_TO_DOSE_ONE_ML));
-
-    console.log(`STIRRING WATER CAN`);
-    stirrer.writeSync(0);
-    await new Promise((res, rej) => setTimeout(() => res(stirrer.writeSync(1)), 15000));
-    return;
-};
-
-const calcNeededAmountOfWater = (potSize) => {
-    return potSize / 0.8; // TODO: real calculation
-}
 
 module.exports = { generateTasksIfNeeded, runTaskIfNeeded };
