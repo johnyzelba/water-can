@@ -1,10 +1,9 @@
 
 const { MS_TO_DOSE_ONE_ML, LITERS_TO_POT_SIZE_RATIO, MAX_LITERS_IN_WATER_CAN, MAX_DISTANCE_FROM_SENSOR_IN_CM, MIN_DISTANCE_FROM_SENSOR_IN_CM, MICROSECONDS_PER_CM } = require('../utils/consts');
-const Gpio = require('onoff').Gpio;
-const { hrtime } = require('process');
-const triggerPin = new Gpio(60, 'out');
+Gpio = require('pigpio').Gpio;
+const triggerPin = new Gpio(60, { mode: Gpio.OUTPUT });
 triggerPin.writeSync(0);
-const echoPin = new Gpio(48, 'in');
+const echoPin = new Gpio(48, { mode: Gpio.INPUT, alert: true });
 
 echoPin.on('alert', (level, tick) => {
     console.log('alert1');
