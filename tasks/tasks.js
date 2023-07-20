@@ -159,7 +159,7 @@ const runTaskIfNeeded = async (db) => {
     try {
         await db.serialize(async () => {
             const tasks = await getPendingTasks(db);
-            const validTasks = await validateTasks(tasks);
+            const validTasks = await validateTasks(db, tasks);
 
             if (!tasks || !tasks.length) {
                 "NO PENDING TASKS"
