@@ -42,7 +42,7 @@ const getAmountOfLiquidInWaterCan = async () => {
             console.log(`---------------------------------------------`);
             await new Promise((res) =>  setTimeout(() => res(true), 1000))
         }
-    });
+    })();
     // return amountOfLiquidInWaterCan;
 };
 
