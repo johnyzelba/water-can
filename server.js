@@ -38,7 +38,7 @@ b.digitalWrite(trigger, 1);     // Unit triggers on a falling edge.
 
 // Pull trigger low and start timing.
 function ping() {
-    console.log('ping');
+    console.log('ping1');
     b.digitalWrite(trigger, 0);
     startTime = process.hrtime();
 }
