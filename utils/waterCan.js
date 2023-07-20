@@ -1,11 +1,12 @@
 
 const { MS_TO_DOSE_ONE_ML, LITERS_TO_POT_SIZE_RATIO, MAX_LITERS_IN_WATER_CAN, MAX_DISTANCE_FROM_SENSOR_IN_CM, MIN_DISTANCE_FROM_SENSOR_IN_CM, MICROSECONDS_PER_CM } = require('../utils/consts');
-Gpio = require('pigpio').Gpio;
-const triggerPin = new Gpio(60, { mode: Gpio.OUTPUT });
+const Gpio = require('onoff').Gpio;
+const { hrtime } = require('process');
+const triggerPin = new Gpio(60, 'out');
 triggerPin.writeSync(0);
-const echoPin = new Gpio(48, { mode: Gpio.INPUT, alert: true });
+const echoPin = new Gpio(48, 'in', "falling");
 
-echoPin.on('alert', (level, tick) => {
+echoPin.watch(() => {
     console.log('alert1');
 });
 
@@ -15,18 +16,18 @@ const getDistance = async () => {
     console.log('2');
     triggerPin.writeSync(0);
     console.log('3');
-    // let startTimeMs = hrtime.bigint();
-    // let endTimeMs = hrtime.bigint();
+    let startTimeMs = hrtime.bigint();
+    let endTimeMs = hrtime.bigint();
 
     return await new Promise(res => 
-        echoPin.on('alert', (level, tick) => {
-            console.log('alert2');
-            if (level == 1) {
-                startTick = tick;
+        echoPin.on((err, value) => {
+            console.log('alert2 ', value);
+            if (value == 1) {
+                startTimeMs = hrtime.bigint();
             } else {
-                const endTick = tick;
-                const diff = (endTick >> 0) - (startTick >> 0);
-                let distance = diff / 2 / MICROSECONDS_PER_CM;
+                endTimeMs = hrtime.bigint();
+                const deltaTime = Number(endTimeMs - startTimeMs) / 1000000000;
+                let distance = (deltaTime * 34300) / 2;
                 console.log(distance);
                 res(distance);
             }
