@@ -1,8 +1,31 @@
 
 const { MS_TO_DOSE_ONE_ML, LITERS_TO_POT_SIZE_RATIO, MAX_LITERS_IN_WATER_CAN, MAX_DISTANCE_FROM_SENSOR_IN_CM, MIN_DISTANCE_FROM_SENSOR_IN_CM } = require('../utils/consts');
-const { HCSR04 } = require('hc-sr04');
+const triggerPin = new Gpio(48, 'out');
+triggerPin.writeSync(0);
+const echoPin = new Gpio(60, 'in');
 
-const ultrasonic = new HCSR04(60, 61);
+const getDistance = () => {
+    triggerPin.writeSync(1);
+    sleepSync(1000);
+    triggerPin.writeSync(0);
+
+    let startTimeMs = hrtime.bigint();
+    let endTimeMs = hrtime.bigint();
+
+    while (echoPin.readSync() === 0) {
+        startTimeMs = hrtime.bigint();
+    }
+
+    while (echoPin.readSync() === 1) {
+        endTimeMs = hrtime.bigint();
+    }
+
+    const deltaTime = Number(endTimeMs - startTimeMs) / 1000000000;
+
+    // multiply with the sonic speed (34300 cm/s)
+    // and divide by 2, because there and back
+    return (deltaTime * 34300) / 2;
+}
 
 const validateWaterCan = async () => {
     console.log("VALIDATING WATER CAN");
@@ -32,7 +55,7 @@ const getAmountOfLiquidInWaterCan = async () => {
     await (async () => {
         while (true) {
             console.log(`CHECKING THE AMOUNT OF LIQUID IN THE WATER CAN`);
-            const distance = ultrasonic.distance();
+            const distance = getDistance();
             console.log('Distance: ' + distance);
             const normalisedDistanceToRatio = (distance - MAX_DISTANCE_FROM_SENSOR_IN_CM) / (MIN_DISTANCE_FROM_SENSOR_IN_CM - MAX_DISTANCE_FROM_SENSOR_IN_CM);
             console.log('normalisedDistanceToRatio: ' + normalisedDistanceToRatio);
