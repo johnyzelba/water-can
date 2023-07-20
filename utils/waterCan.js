@@ -4,7 +4,7 @@ const Gpio = require('onoff').Gpio;
 const { hrtime } = require('process');
 const triggerPin = new Gpio(60, 'out');
 triggerPin.writeSync(0);
-const echoPin = new Gpio(48, 'in', "falling");
+const echoPin = new Gpio(61, 'in', "falling");
 
 echoPin.watch(() => {
     console.log('alert1');
@@ -12,26 +12,39 @@ echoPin.watch(() => {
 
 const getDistance = async () => {
     triggerPin.writeSync(1);
-    console.log('1');
-    console.log('2');
-    triggerPin.writeSync(0);
-    console.log('3');
     let startTimeMs = hrtime.bigint();
     let endTimeMs = hrtime.bigint();
-
-    return await new Promise(res => 
-        echoPin.watch((err, value) => {
-            console.log('alert2 ', value);
-            if (value == 1) {
-                startTimeMs = hrtime.bigint();
-            } else {
-                endTimeMs = hrtime.bigint();
-                const deltaTime = Number(endTimeMs - startTimeMs) / 1000000000;
-                let distance = (deltaTime * 34300) / 2;
-                console.log(distance);
-                res(distance);
-            }
-        })
+    console.log('1');
+    echoPin.watch((err, value) => {
+        console.log('alert2 ', value);
+        if (value == 1) {
+            startTimeMs = hrtime.bigint();
+        } else {
+            endTimeMs = hrtime.bigint();
+            const deltaTime = Number(endTimeMs - startTimeMs) / 1000000000;
+            let distance = (deltaTime * 34300) / 2;
+            console.log(distance);
+            triggerPin.writeSync(0);
+            res(distance);
+        }
+    });
+    console.log('2');
+    return await new Promise(res => {
+            console.log('3');
+            echoPin.watch((err, value) => {
+                console.log('alert3 ', value);
+                if (value == 1) {
+                    startTimeMs = hrtime.bigint();
+                } else {
+                    endTimeMs = hrtime.bigint();
+                    const deltaTime = Number(endTimeMs - startTimeMs) / 1000000000;
+                    let distance = (deltaTime * 34300) / 2;
+                    console.log(distance);
+                    triggerPin.writeSync(0);
+                    res(distance);
+                }
+            });
+        }
     );
 
     // const deltaTime = Number(endTimeMs - startTimeMs) / 1000000000;
