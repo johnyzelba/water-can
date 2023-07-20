@@ -40,7 +40,7 @@ const getAmountOfLiquidInWaterCan = async () => {
             const amountOfLiquidInWaterCan = normalisedDistanceToRatio * MAX_LITERS_IN_WATER_CAN;
             console.log('amountOfLiquidInWaterCan: ' + amountOfLiquidInWaterCan);
             console.log(`---------------------------------------------`);
-            await new Promise((res) =>  setTimeout(() => res(true), 1000))
+            await new Promise((res) =>  setTimeout(() => res(true), 2000))
         }
     })();
     // return amountOfLiquidInWaterCan;
