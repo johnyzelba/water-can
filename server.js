@@ -42,7 +42,7 @@ b.digitalWrite(trigger, 1);     // Unit triggers on a falling edge.
 
 // Pull the trigger low at a regular interval.
 setInterval(ping, ms);
-
+setInterval(() => console.log("------"), 250);
 // Pull trigger low and start timing.
 function ping() {
     console.log('ping');
