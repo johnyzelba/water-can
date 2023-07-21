@@ -40,9 +40,7 @@ b.pinMode(trigger, b.OUTPUT);
 b.digitalWrite(trigger, 1);     // Unit triggers on a falling edge.
 // Set trigger to high so we call pull it low later
 
-// Pull the trigger low at a regular interval.
-setInterval(ping, ms);
-setInterval(() => console.log("------"), 250);
+
 // Pull trigger low and start timing.
 function ping() {
     console.log('ping');
@@ -163,5 +161,8 @@ const db = new sqlite3.Database('/home/debian/water-can/WaterCan.db', (err) => {
         }
         console.log("SERVER IS RUNNING");
         sendMsgToUser(`Server started`);
+        // Pull the trigger low at a regular interval.
+        setInterval(ping, ms);
+        setInterval(() => console.log("------"), 250);
     });
 });
