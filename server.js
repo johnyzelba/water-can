@@ -159,6 +159,6 @@ const db = new sqlite3.Database('/home/debian/water-can/WaterCan.db', (err) => {
         console.log("SERVER IS RUNNING");
         sendMsgToUser(`Server started`);
         // Pull the trigger low at a regular interval.
-        ping();
+        setInterval(ping, ms);
     });
 });
