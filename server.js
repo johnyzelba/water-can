@@ -48,6 +48,8 @@ function ping() {
 
 // Compute the total time and get ready to trigger again.
 function pingEnd(x) {
+    console.log('---------', x);
+
     if (x.attached) {
         console.log("Interrupt handler attached");
         return;
