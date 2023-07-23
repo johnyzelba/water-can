@@ -1,4 +1,6 @@
 const TelegramBot = require('node-telegram-bot-api');
+const process = require('node:process');
+
 require('dotenv').config();
 
 const token = process.env.TELEGRAM_TOKEN;
@@ -8,7 +10,7 @@ const bot = new TelegramBot(token, { polling: true });
 
 const sendMsgToUser = async (msg) => {
     const now = new Date().toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem' });
-    // await bot.sendMessage(chatId, `<b>${now}</b> \n\n${msg} \n\n`, { parse_mode: "HTML" });
+    await bot.sendMessage(chatId, `<b>${now}</b> \n\n${msg} \n\n`, { parse_mode: "HTML" });
 }
 
 module.exports = { sendMsgToUser };

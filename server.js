@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const axios = require('axios/dist/node/axios.cjs');
 const axiosRetry = require('axios-retry');
-const cron = require('node-cron');
+// const cron = require('node-cron');
 const sqlite3 = require('sqlite3').verbose();
 const app = express();
 const path = require('path');
@@ -10,7 +10,7 @@ const { sendMsgToUser } = require('./utils/telegramBot');
 const { getDataFromRouterAndSave, getRouterIps } = require("./router/router");
 const { generateTasksIfNeeded, runTaskIfNeeded } = require("./tasks/tasks");
 const { startTransaction, endTransaction } = require('./utils/transactions');
-
+const process = require('node:process');
 
 
 // This is an example of reading HC-SR04 Ultrasonic Range Finder
@@ -71,7 +71,7 @@ axiosRetry(axios, {
         console.log(`retry attempt: ${retryCount}`);
         return retryCount * 3000;
     },
-    retryCondition: (error) => {
+    retryCondition: () => {
         return true;
     },
 });
