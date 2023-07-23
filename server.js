@@ -10,8 +10,6 @@ const { sendMsgToUser } = require('./utils/telegramBot');
 const { getDataFromRouterAndSave, getRouterIps } = require("./router/router");
 const { generateTasksIfNeeded, runTaskIfNeeded } = require("./tasks/tasks");
 const { startTransaction, endTransaction } = require('./utils/transactions');
-const process = require('node:process');
-
 
 // This is an example of reading HC-SR04 Ultrasonic Range Finder
 // This version measures from the fall of the Trigger pulse 
