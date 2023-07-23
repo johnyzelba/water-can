@@ -2,25 +2,8 @@ const { getPlants, getPlant } = require('../utils/plants');
 const { getLatestPlantsReports } = require('../utils/plantReports');
 const { sendMsgToUser } = require('../utils/telegramBot');
 const { validateWaterCan, fillWaterCan, addNutritions, resetWaterValve, getFlowAmount } = require('../utils/waterCan');
-const Gpio = require('onoff').Gpio;
 const { SOIL_MOISTURE_WATERING_THRESHOLD } = require('../utils/consts');
 
-const waterSelanoid = new Gpio(44, 'out');
-const nitrogenPump = new Gpio(26, 'out');
-const phosphorusPump = new Gpio(46, 'out');
-const potassiumPump = new Gpio(65, 'out');
-const stirrer = new Gpio(45, 'out');
-// const ultraSonic1Trig = new Gpio(60, 'out');
-// const ultraSonic1Echo = new Gpio(61, 'in', 'falling');
-const ultraSonic2Trig = new Gpio(62, 'out');
-const ultraSonic2Echo = new Gpio(36, 'in', 'falling');
-const waterFlow = new Gpio(32, 'in');
-
-waterSelanoid.writeSync(1);
-nitrogenPump.writeSync(1);
-phosphorusPump.writeSync(1);
-potassiumPump.writeSync(1);
-stirrer.writeSync(1);
 
 const getPlantsPendingAndInProgressTasks = async (db, plantReports) => {
     console.log(`GETTING PENDING AND IN_PROGRESS TASKS FROM DB`);
@@ -90,7 +73,7 @@ const generateTasks = async (db, plantReports) => {
                     `INSERT INTO tasks 
                     (plant_id, status, timestamp)
                     VALUES (${plantReport.plantId}, "PENDING", CURRENT_TIMESTAMP)`,
-                    (err, rows) => {
+                    (err) => {
                         if (err) {
                             db.rollback();
                             sendMsgToUser(`Generated a new watering task for plant id: ${plantReport.plantId}`);
@@ -230,7 +213,7 @@ const validateTasks = async (db, tasks) => {
             console.log("VALIDATION FAILED: PLANT SOIL IS MOIST");
         }
         await updateTaskStatus(db, runningTask.id, "ABORTED");
-    };
+    }
     console.log(`THERE ARE ${validTasks.length} VALID TASKS`);
     return validTasks;
 };

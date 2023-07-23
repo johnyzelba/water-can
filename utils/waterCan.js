@@ -1,5 +1,24 @@
 
 const { MS_TO_DOSE_ONE_ML, LITERS_TO_POT_SIZE_RATIO, MAX_LITERS_IN_WATER_CAN, MAX_DISTANCE_FROM_SENSOR_IN_CM, MIN_DISTANCE_FROM_SENSOR_IN_CM, MICROSECONDS_PER_CM } = require('../utils/consts');
+const Gpio = require('onoff').Gpio;
+
+const waterSelanoid = new Gpio(44, 'out');
+
+const nitrogenPump = new Gpio(26, 'out');
+const phosphorusPump = new Gpio(46, 'out');
+const potassiumPump = new Gpio(65, 'out');
+const stirrer = new Gpio(45, 'out');
+// const ultraSonic1Trig = new Gpio(60, 'out');
+// const ultraSonic1Echo = new Gpio(61, 'in', 'falling');
+// const ultraSonic2Trig = new Gpio(62, 'out');
+// const ultraSonic2Echo = new Gpio(36, 'in', 'falling');
+const waterFlow = new Gpio(32, 'in');
+
+nitrogenPump.writeSync(1);
+phosphorusPump.writeSync(1);
+potassiumPump.writeSync(1);
+stirrer.writeSync(1);
+waterSelanoid.writeSync(1);
 
 const getDistance = async () => {
     return 0;
@@ -31,25 +50,19 @@ const isWaterCanEnmpty = async () => {
 
 const getAmountOfLiquidInWaterCan = async () => {
     await (async () => {
-        while (true) {
             console.log(`CHECKING THE AMOUNT OF LIQUID IN THE WATER CAN`);
             const distance = await getDistance();
-            console.log('Distance: ' + distance);
             const normalisedDistanceToRatio = (distance - MAX_DISTANCE_FROM_SENSOR_IN_CM) / (MIN_DISTANCE_FROM_SENSOR_IN_CM - MAX_DISTANCE_FROM_SENSOR_IN_CM);
-            console.log('normalisedDistanceToRatio: ' + normalisedDistanceToRatio);
-
             const amountOfLiquidInWaterCan = normalisedDistanceToRatio * MAX_LITERS_IN_WATER_CAN;
-            console.log('amountOfLiquidInWaterCan: ' + amountOfLiquidInWaterCan);
-            console.log(`---------------------------------------------`);
-            await new Promise((res) =>  setTimeout(() => res(true), 2000))
-        }
+            
+        return await new Promise((res) => setTimeout(() => res(amountOfLiquidInWaterCan), 2000))
     })();
     // return amountOfLiquidInWaterCan;
 };
 
 const getFlowAmount = async () => {
     console.log(`CHECKING THE AMOUNT OF FLOWING WATER`);
-    return await waterFlow.readSync();
+    return 0;
 };
 
 const fillWaterCan = async (potSize) => {
@@ -95,14 +108,14 @@ const addNutritions = async (potSize, nitrogen, phosphorus, potassium) => {
     stirrer.writeSync(0);
 
     nitrogenPump.writeSync(0); waterFlow
-    await new Promise((res, rej) => setTimeout(() => res(nitrogenPump.writeSync(1)), neededNitrogen * MS_TO_DOSE_ONE_ML));
+    await new Promise((res) => setTimeout(() => res(nitrogenPump.writeSync(1)), neededNitrogen * MS_TO_DOSE_ONE_ML));
 
     phosphorusPump.writeSync(0);
-    await new Promise((res, rej) => setTimeout(() => res(phosphorusPump.writeSync(1)), neededPhosphorus * MS_TO_DOSE_ONE_ML));
+    await new Promise((res) => setTimeout(() => res(phosphorusPump.writeSync(1)), neededPhosphorus * MS_TO_DOSE_ONE_ML));
 
     potassiumPump.writeSync(0);
-    await new Promise((res, rej) => setTimeout(() => res(potassiumPump.writeSync(1)), neededPotassium * MS_TO_DOSE_ONE_ML));
-    await new Promise((res, rej) => setTimeout(() => res(stirrer.writeSync(1)), 30000));
+    await new Promise((res) => setTimeout(() => res(potassiumPump.writeSync(1)), neededPotassium * MS_TO_DOSE_ONE_ML));
+    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 30000));
 
     console.log(`ADDED NUTRITIONS SUCCESSFULLY`);
 
