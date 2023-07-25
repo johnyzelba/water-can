@@ -157,7 +157,7 @@ const runTaskIfNeeded = async (db) => {
                     sendMsgToUser(`Filling water can for plant: ${validTasks[0].plant.name}(${validTasks[0].plant.id})`);
                     // await updateTaskStatus(db, runningTask.id, "IN_PROGRESS");
 
-                    await fillWaterCan(validTasks[0].plant.potSize);
+                    // await fillWaterCan(validTasks[0].plant.potSize);
                     await addNutritions(validTasks[0].plant.potSize, validTasks[0].plant.n, validTasks[0].plant.p, validTasks[0].plant.k);
 
                     // await updateTaskStatus(db, runningTask.id, "DONE");
