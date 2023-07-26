@@ -106,14 +106,18 @@ const addNutritions = async (potSize, nitrogen, phosphorus, potassium) => {
     const neededPotassium = potassium * neededAmountOfWaterInLiters;
 
     console.log(`STIRRING WATER CAN`);
-    b.analogWrite('P9_14', 0.1, 2000, (e) => console.log("--------------e ", e));
+    b.analogWrite('P9_14', 0, 100, (e) => console.log("--------------e ", e));
     stirrer.writeSync(0);
-    b.analogWrite('P9_14', 0.3, 2000, (e) => console.log("--------------e ", e));
-    b.analogWrite('P9_14', 0.5, 2000, (e) => console.log("--------------e ", e));
-    b.analogWrite('P9_14', 0.7, 2000, (e) => console.log("--------------e ", e));
-    b.analogWrite('P9_14', 0.9, 2000, (e) => console.log("--------------e ", e));
-    b.analogWrite('P9_14', 1, 2000, (e) => console.log("--------------e ", e));
+    stirrer.writeSync(1);
+    await new Promise((res) => setTimeout(() => res(), 1000)); 
 
+    b.analogWrite('P9_14', 0.5, 100, (e) => console.log("--------------e ", e));
+    stirrer.writeSync(0);
+    stirrer.writeSync(1);
+    await new Promise((res) => setTimeout(() => res(), 1000)); 
+
+    b.analogWrite('P9_14', 1, 100, (e) => console.log("--------------e ", e));
+    stirrer.writeSync(0);
     nitrogenPump.writeSync(0); waterFlow
     await new Promise((res) => setTimeout(() => res(nitrogenPump.writeSync(1)), neededNitrogen * MS_TO_DOSE_ONE_ML));
 
