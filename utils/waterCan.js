@@ -107,10 +107,10 @@ const addNutritions = async (potSize, nitrogen, phosphorus, potassium) => {
 
     console.log(`STIRRING WATER CAN`);
     stirrer.writeSync(0);
-    const tempArr = new Array(40).fill('');
+    const tempArr = new Array(60).fill('');
     for (let [index] of tempArr.entries()) {
         await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 60));
-        await new Promise((res) => setTimeout(() => res(stirrer.writeSync(0)), 600 - (index * 2)));
+        await new Promise((res) => setTimeout(() => res(stirrer.writeSync(0)), 650 - (index * 2)));
         console.log("----------", index);
     }
     
@@ -128,7 +128,7 @@ const addNutritions = async (potSize, nitrogen, phosphorus, potassium) => {
     // await new Promise((res) => setTimeout(() => res(), 2000)); 
     // await new Promise((res) => b.analogWrite('P9_14', 0.8, 2000, (e) => res(e)));
     // console.log("----------8");
-    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 2000));
+    stirrer.writeSync(1);
     
     // nitrogenPump.writeSync(0); waterFlow
     // await new Promise((res) => setTimeout(() => res(nitrogenPump.writeSync(1)), neededNitrogen * MS_TO_DOSE_ONE_ML));
