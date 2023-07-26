@@ -107,29 +107,12 @@ const addNutritions = async (potSize, nitrogen, phosphorus, potassium) => {
 
     console.log(`STIRRING WATER CAN`);
     stirrer.writeSync(0);
-    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 500));
-    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(0)), 100));
-    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 500));
-    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(0)), 100));
-    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 500));
-    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(0)), 100));
-    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 500));
-    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(0)), 100));
-    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 500));
-    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(0)), 100));
-    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 500));
-    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(0)), 100));
-    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 500));
-    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(0)), 100));
-    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 500));
-    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(0)), 100));
-    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 500));
-    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(0)), 100));
-    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 500));
-    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(0)), 100));
-    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 500));
-    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(0)), 100));
-    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 500));
+    for (let index of new Array(20).fill((_, index) => index)) {
+    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 200));
+    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(0)), 200));
+    console.log("----------", index);
+    }
+    
     // await new Promise((res) => b.analogWrite('P9_14', 0, 2000, (e) => res(e))); 
     // console.log("----------0");
     // await new Promise((res) => setTimeout(() => res(), 2000)); 
