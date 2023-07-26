@@ -107,9 +107,9 @@ const addNutritions = async (potSize, nitrogen, phosphorus, potassium) => {
 
     console.log(`STIRRING WATER CAN`);
     stirrer.writeSync(0);
-    for (let index of new Array(20).fill((_, index) => index)) {
-    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 200));
-    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(0)), 200));
+    for (let index of new Array(30).fill((_, index) => index)) {
+    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 100));
+    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(0)), 50 * ((30 - index) / 3)));
     console.log("----------", index);
     }
     
