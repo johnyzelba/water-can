@@ -107,20 +107,44 @@ const addNutritions = async (potSize, nitrogen, phosphorus, potassium) => {
 
     console.log(`STIRRING WATER CAN`);
     stirrer.writeSync(0);
-    await new Promise((res) => b.analogWrite('P9_14', 0, 3000, (e) => res(e))); 
-    console.log("----------0");
-    await new Promise((res) => setTimeout(() => res(), 2000)); 
-    await new Promise((res) => b.analogWrite('P9_14', 0.2, 3000, (e) => res(e)));
-    console.log("----------2");
-    await new Promise((res) => setTimeout(() => res(), 2000)); 
-    await new Promise((res) => b.analogWrite('P9_14', 0.4, 3000, (e) => res(e)));
-    console.log("----------4");
-    await new Promise((res) => setTimeout(() => res(), 2000)); 
-    await new Promise((res) => b.analogWrite('P9_14', 0.6, 3000, (e) => res(e)));
-    console.log("----------6");
-    await new Promise((res) => setTimeout(() => res(), 2000)); 
-    await new Promise((res) => b.analogWrite('P9_14', 0.8, 3000, (e) => res(e)));
-    console.log("----------8");
+    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 300));
+    stirrer.writeSync(0);
+    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 300));
+    stirrer.writeSync(0);
+    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 300));
+        stirrer.writeSync(0);
+    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 300));
+        stirrer.writeSync(0);
+    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 300));
+        stirrer.writeSync(0);
+    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 300));
+
+    stirrer.writeSync(0);
+    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 300));
+    stirrer.writeSync(0);
+    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 300));
+    stirrer.writeSync(0);
+    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 300));
+    stirrer.writeSync(0);
+    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 300));
+    stirrer.writeSync(0);
+    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 300));
+    stirrer.writeSync(0);
+    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 300));
+    // await new Promise((res) => b.analogWrite('P9_14', 0, 2000, (e) => res(e))); 
+    // console.log("----------0");
+    // await new Promise((res) => setTimeout(() => res(), 2000)); 
+    // await new Promise((res) => b.analogWrite('P9_14', 0.2, 2000, (e) => res(e)));
+    // console.log("----------2");
+    // await new Promise((res) => setTimeout(() => res(), 2000)); 
+    // await new Promise((res) => b.analogWrite('P9_14', 0.4, 2000, (e) => res(e)));
+    // console.log("----------4");
+    // await new Promise((res) => setTimeout(() => res(), 2000)); 
+    // await new Promise((res) => b.analogWrite('P9_14', 0.6, 2000, (e) => res(e)));
+    // console.log("----------6");
+    // await new Promise((res) => setTimeout(() => res(), 2000)); 
+    // await new Promise((res) => b.analogWrite('P9_14', 0.8, 2000, (e) => res(e)));
+    // console.log("----------8");
     await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 2000));
     
     // nitrogenPump.writeSync(0); waterFlow
