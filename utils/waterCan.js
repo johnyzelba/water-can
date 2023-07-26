@@ -1,18 +1,12 @@
 
 const { MS_TO_DOSE_ONE_ML, LITERS_TO_POT_SIZE_RATIO, MAX_LITERS_IN_WATER_CAN, MAX_DISTANCE_FROM_SENSOR_IN_CM, MIN_DISTANCE_FROM_SENSOR_IN_CM } = require('../utils/consts');
 const Gpio = require('onoff').Gpio;
-var b = require('bonescript');
 
 const waterSelanoid = new Gpio(44, 'out');
-
 const nitrogenPump = new Gpio(26, 'out');
 const phosphorusPump = new Gpio(46, 'out');
 const potassiumPump = new Gpio(65, 'out');
 const stirrer = new Gpio(45, 'out');
-// const ultraSonic1Trig = new Gpio(60, 'out');
-// const ultraSonic1Echo = new Gpio(61, 'in', 'falling');
-// const ultraSonic2Trig = new Gpio(62, 'out');
-// const ultraSonic2Echo = new Gpio(36, 'in', 'falling');
 const waterFlow = new Gpio(32, 'in');
 
 nitrogenPump.writeSync(1);
@@ -105,40 +99,24 @@ const addNutritions = async (potSize, nitrogen, phosphorus, potassium) => {
     const neededPhosphorus = phosphorus * neededAmountOfWaterInLiters;
     const neededPotassium = potassium * neededAmountOfWaterInLiters;
 
+    nitrogenPump.writeSync(0); waterFlow
+    await new Promise((res) => setTimeout(() => res(nitrogenPump.writeSync(1)), neededNitrogen * MS_TO_DOSE_ONE_ML));
+
+    phosphorusPump.writeSync(0);
+    await new Promise((res) => setTimeout(() => res(phosphorusPump.writeSync(1)), neededPhosphorus * MS_TO_DOSE_ONE_ML));
+
+    potassiumPump.writeSync(0);
+    await new Promise((res) => setTimeout(() => res(potassiumPump.writeSync(1)), neededPotassium * MS_TO_DOSE_ONE_ML));
+    await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 5000));
+
     console.log(`STIRRING WATER CAN`);
     stirrer.writeSync(0);
-    const tempArr = new Array(60).fill('');
-    for (let [index] of tempArr.entries()) {
+    const tempArr = new Array(100).fill('');
+    for (let _ of tempArr) {
         await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 60));
-        await new Promise((res) => setTimeout(() => res(stirrer.writeSync(0)), 400));
-        console.log("----------", index);
+        await new Promise((res) => setTimeout(() => res(stirrer.writeSync(0)), 500));
     }
-    
-    // await new Promise((res) => b.analogWrite('P9_14', 0, 2000, (e) => res(e))); 
-    // console.log("----------0");
-    // await new Promise((res) => setTimeout(() => res(), 2000)); 
-    // await new Promise((res) => b.analogWrite('P9_14', 0.2, 2000, (e) => res(e)));
-    // console.log("----------2");
-    // await new Promise((res) => setTimeout(() => res(), 2000)); 
-    // await new Promise((res) => b.analogWrite('P9_14', 0.4, 2000, (e) => res(e)));
-    // console.log("----------4");
-    // await new Promise((res) => setTimeout(() => res(), 2000)); 
-    // await new Promise((res) => b.analogWrite('P9_14', 0.6, 2000, (e) => res(e)));
-    // console.log("----------6");
-    // await new Promise((res) => setTimeout(() => res(), 2000)); 
-    // await new Promise((res) => b.analogWrite('P9_14', 0.8, 2000, (e) => res(e)));
-    // console.log("----------8");
     stirrer.writeSync(1);
-    
-    // nitrogenPump.writeSync(0); waterFlow
-    // await new Promise((res) => setTimeout(() => res(nitrogenPump.writeSync(1)), neededNitrogen * MS_TO_DOSE_ONE_ML));
-
-    // phosphorusPump.writeSync(0);
-    // await new Promise((res) => setTimeout(() => res(phosphorusPump.writeSync(1)), neededPhosphorus * MS_TO_DOSE_ONE_ML));
-
-    // potassiumPump.writeSync(0);
-    // await new Promise((res) => setTimeout(() => res(potassiumPump.writeSync(1)), neededPotassium * MS_TO_DOSE_ONE_ML));
-    // await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 5000));
 
     console.log(`ADDED NUTRITIONS SUCCESSFULLY`);
 
