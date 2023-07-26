@@ -109,7 +109,7 @@ const addNutritions = async (potSize, nitrogen, phosphorus, potassium) => {
     stirrer.writeSync(0);
     const tempArr = new Array(60).fill('');
     for (let [index] of tempArr.entries()) {
-        await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 60 + index));
+        await new Promise((res) => setTimeout(() => res(stirrer.writeSync(1)), 80));
         await new Promise((res) => setTimeout(() => res(stirrer.writeSync(0)), 500));
         console.log("----------", index);
     }
