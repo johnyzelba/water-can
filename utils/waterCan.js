@@ -1,6 +1,7 @@
 
 const { MS_TO_DOSE_ONE_ML, LITERS_TO_POT_SIZE_RATIO, MAX_LITERS_IN_WATER_CAN, MAX_DISTANCE_FROM_SENSOR_IN_CM, MIN_DISTANCE_FROM_SENSOR_IN_CM } = require('../utils/consts');
 const Gpio = require('onoff').Gpio;
+var b = require('bonescript');
 
 const waterSelanoid = new Gpio(44, 'out');
 
@@ -105,6 +106,7 @@ const addNutritions = async (potSize, nitrogen, phosphorus, potassium) => {
     const neededPotassium = potassium * neededAmountOfWaterInLiters;
 
     console.log(`STIRRING WATER CAN`);
+    b.analogWrite('P9_14', 0.3, 2000, (e) => console.log("--------------e ", e));
     stirrer.writeSync(0);
 
     nitrogenPump.writeSync(0); waterFlow
