@@ -106,7 +106,7 @@ const addNutritions = async (potSize, nitrogen, phosphorus, potassium) => {
     const neededPotassium = potassium * neededAmountOfWaterInLiters;
 
     console.log(`STIRRING WATER CAN`);
-    b.analogWrite('P9_14', 0.3, 2000, (e) => console.log("--------------e ", e));
+    b.analogWrite('P9_14', 0.1, 2000, (e) => console.log("--------------e ", e));
     stirrer.writeSync(0);
 
     nitrogenPump.writeSync(0); waterFlow
