@@ -5,14 +5,13 @@ const {
     LITERS_TO_POT_SIZE_RATIO,
     MAX_DISTANCE_FROM_SENSOR_IN_CM,
     MIN_DISTANCE_FROM_SENSOR_IN_CM,
-
     WATERSELANOIDPIN,
     NITROGENPUMPPIN,
     PHOSPHORUSPUMPPIN,
     POTASSIUMPUMPPIN,
     STIRRERPIN,
     WATERFLOWPIN 
-} = require('../utils/consts');
+} = require('./consts');
 const Gpio = require('onoff').Gpio;
 
 const waterSelanoid = new Gpio(WATERSELANOIDPIN, 'out');
