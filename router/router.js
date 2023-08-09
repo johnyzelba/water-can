@@ -1,4 +1,4 @@
-const axios = require('axios/dist/node/axios.cjs');
+const axios = require('axios');
 const Evilscan = require('evilscan');
 const { toMAC } = require('@network-utils/arp-lookup');
 
