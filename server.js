@@ -91,7 +91,7 @@ app.get('/scanplants', async function (req, res) {
 });
 
 
-const db = new sqlite3.Database('/home/debian/water-can/WaterCan.db', (err) => {
+const db = new sqlite3.Database('/home/johny/water-can/WaterCan.db', (err) => {
     if (err) {
         return console.error(err.message);
     }
