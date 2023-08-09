@@ -1,13 +1,26 @@
 
-const { MS_TO_DOSE_ONE_ML, LITERS_TO_POT_SIZE_RATIO, MAX_LITERS_IN_WATER_CAN, MAX_DISTANCE_FROM_SENSOR_IN_CM, MIN_DISTANCE_FROM_SENSOR_IN_CM } = require('../utils/consts');
+const { 
+    MAX_LITERS_IN_WATER_CAN,
+    MS_TO_DOSE_ONE_ML,
+    LITERS_TO_POT_SIZE_RATIO,
+    MAX_DISTANCE_FROM_SENSOR_IN_CM,
+    MIN_DISTANCE_FROM_SENSOR_IN_CM,
+
+    WATERSELANOIDPIN,
+    NITROGENPUMPPIN,
+    PHOSPHORUSPUMPPIN,
+    POTASSIUMPUMPPIN,
+    STIRRERPIN,
+    WATERFLOWPIN 
+} = require('../utils/consts');
 const Gpio = require('onoff').Gpio;
 
-const waterSelanoid = new Gpio(44, 'out');
-const nitrogenPump = new Gpio(26, 'out');
-const phosphorusPump = new Gpio(46, 'out');
-const potassiumPump = new Gpio(65, 'out');
-const stirrer = new Gpio(45, 'out');
-const waterFlow = new Gpio(32, 'in');
+const waterSelanoid = new Gpio(WATERSELANOIDPIN, 'out');
+const nitrogenPump = new Gpio(NITROGENPUMPPIN, 'out');
+const phosphorusPump = new Gpio(PHOSPHORUSPUMPPIN, 'out');
+const potassiumPump = new Gpio(POTASSIUMPUMPPIN, 'out');
+const stirrer = new Gpio(STIRRERPIN, 'out');
+const waterFlow = new Gpio(WATERFLOWPIN, 'in');
 
 nitrogenPump.writeSync(1);
 phosphorusPump.writeSync(1);

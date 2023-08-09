@@ -71,7 +71,7 @@ app.get('/runtask', async function (req, res) {
     }
 });
 
-app.get('/plants', async function (req, res) {
+app.get('/scanplants', async function (req, res) {
     try {
         await startTransaction(db);
         const routersWithIp = await getRouterIps(db);
