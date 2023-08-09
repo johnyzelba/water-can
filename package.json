@@ -22,6 +22,7 @@
     "node-cron": "^3.0.2",
     "node-telegram-bot-api": "^0.61.0",
     "onoff": "^5.0.0",
+    "serialport": "^11.0.1",
     "sqlite": "^3.0.6",
     "sqlite3": "^5.1.6"
   },
