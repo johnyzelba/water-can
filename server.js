@@ -10,7 +10,7 @@ const { sendMsgToUser } = require('./utils/telegramBot');
 const { getDataFromRouterAndSave, getRouterIps } = require("./router/router");
 const { generateTasksIfNeeded, runTaskIfNeeded } = require("./tasks/tasks");
 const { startTransaction, endTransaction } = require('./utils/transactions');
-
+const { ping } = require('./utils/arduino');
 path.resolve(__dirname, '../../../dev.sqlite3');
 
 axiosRetry(axios, {
@@ -104,10 +104,12 @@ const db = new sqlite3.Database('/home/johny/water-can/WaterCan.db', (err) => {
                     return console.error(err.message, db);
                 }
                 console.log('DB CONNECTION CLOSED');
+                ping();
             });
             return error;
         }
         console.log("SERVER IS RUNNING");
+        
         // sendMsgToUser(`Server started`);
     });
 });
