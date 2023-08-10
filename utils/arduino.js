@@ -6,15 +6,12 @@ const port = new SerialPort({
     dataBits: 8,
     stopBits: 1,
     parity: 'none',
+    parser: SerialPort.parsers.readline('\n')
 });
-const Readline = SerialPort.parsers.Readline;
-const parser = new Readline();
-
-port.pipe(parser);
 
 const ping = async () => {
     console.log(`GETTING LATEST PLANTS REPORTS FROM DB`);
-    parser.on('data', (data) => console.log("-----------data: ", data));
+    port.on('data', (data) => console.log("-----------data: ", data));
     port.write('PING');
     
 }
