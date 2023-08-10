@@ -7,7 +7,7 @@ const ping = async () => {
         path: '/dev/ttyUSB0',
         baudRate: 9600,
     }, function (err) {
-        console.log('Error: ', err.message);
+        console.log('Error: ', err);
     });
     console.log(`PINGING ARDUINO`);
     port.on('open', () => {
