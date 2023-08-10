@@ -1,5 +1,5 @@
 const { SerialPort } = require('serialport');
-const Readline = require('@serialport/parser-readline');
+const { ReadlineParser } = require('@serialport/parser-readline')
 
 
 const ping = async () => {
@@ -7,7 +7,7 @@ const ping = async () => {
         path: '/dev/ttyUSB0',
         baudRate: 9600,
     });
-    const parser = port.pipe(new Readline({ delimiter: '\n' }));
+    const parser = port.pipe(new ReadlineParser({ delimiter: '\r\n' }))
 
     console.log(`PINGING ARDUINO`);
     port.on('open', () => {
