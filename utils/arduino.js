@@ -15,7 +15,6 @@ const ping = async () => {
         port.on('open', () => {
             port.write('PING');
             setTimeout(() => port.write('PING'), 1000);
-            setTimeout(() => port.write('PING'), 2000);
             parser.on('data', (data) => {
                 res(JSON.parse(data))
             });
