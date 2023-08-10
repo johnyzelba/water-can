@@ -29,6 +29,9 @@ waterSelanoid.writeSync(1);
 
 const getDistance = async () => {
     const response: { distanceA: number, distanceB: number} = await getDataFromArduino(RequestTypes.DISTANCE);
+    if (!response.distanceA || !response.distanceB ) {
+        throw "SOMETHING'S WRONG! (no response from distance sensors)";
+    }
     if (Math.abs(response.distanceA - response.distanceB) > 3) {
         throw "SOMETHING'S WRONG! (delta between distance sensors is to high)";
     }
@@ -91,7 +94,7 @@ export const fillWaterCan = async (potSize) => {
 
         if (amountOfLiquidInWaterCanArr[iterations] <= amountOfLiquidInWaterCanArr[iterations - 1]) {
             waterSelanoid.writeSync(1);
-            throw "SOMETHING'S WRONG!";
+            throw "SOMETHING'S WRONG! (water can not filling up)";
         }
     }
     console.log(`FILLED WATER CAN WITH WATER SUCCESSFULLY`);

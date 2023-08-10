@@ -9,7 +9,7 @@ export enum RequestTypes {
 };
 
 export const getDataFromArduino = async (request: RequestTypes):Promise<any> => {
-    console.log(`PINGING ARDUINO`);
+    console.log(`SENDING REQUEST TO ARDUINO: ${request}`);
     const port: any = new SerialPort({
         path: '/dev/ttyUSB0',
         baudRate: 9600,
