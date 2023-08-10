@@ -9,7 +9,7 @@ import { SOIL_MOISTURE_WATERING_THRESHOLD } from '../utils/consts';
 
 const getPlantsPendingAndInProgressTasks = async (db, plantReports) => {
     console.log(`GETTING PENDING AND IN_PROGRESS TASKS FROM DB`);
-    const tasksInProgressRows = (await Promise.all(
+    const tasksInProgressRows: any[] = (await Promise.all(
         plantReports.map(async plantReport => {
             return new Promise(function (resolve, reject) {
                 db.all(
@@ -235,6 +235,3 @@ const validateTasks = async (db, tasks: Task[]): Promise<ValidTask[]> => {
     console.log(`THERE ARE ${validTasks.length} VALID TASKS`);
     return validTasks;
 };
-
-
-module.exports = { generateTasksIfNeeded, runTaskIfNeeded };

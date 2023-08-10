@@ -1,9 +1,8 @@
-const axios = require('axios');
-const Evilscan = require('evilscan');
-const { toMAC } = require('@network-utils/arp-lookup');
-
-const { getPlants } = require('../utils/plants');
-const { createPlantsReports } = require('../utils/plantReports');
+import axios from 'axios';
+import Evilscan from  'evilscan';
+import { toMAC } from '@network-utils/arp-lookup'
+import { getPlants } from  '../utils/plants';
+import { createPlantsReports } from  '../utils/plantReports';
 
 type RouterRow = { id: number, name: string, mac: string, ip: string };
 
