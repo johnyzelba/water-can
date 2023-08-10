@@ -6,7 +6,6 @@ const port = new SerialPort({
     dataBits: 8,
     stopBits: 1,
     parity: 'none',
-    parser: SerialPort.parsers.readline('\n')
 });
 
 const ping = async () => {
