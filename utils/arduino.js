@@ -1,19 +1,20 @@
 const { SerialPort } = require('serialport');
 
-const port = new SerialPort({
-    path: '/dev/ttyUSB0',
-    baudRate: 9600,
-});
+
 
 const ping = async () => {
-    try {
+    const port = new SerialPort({
+        path: '/dev/ttyUSB0',
+        baudRate: 9600,
+    });
     console.log(`PINGING ARDUINO`);
-    port.write('PING');
-    port.on('data', (data) => console.log("-----------data: ", data));
-    } catch(e) {
-        console.log(e);
-    }
-
+    port.on('open', () => {
+        port.write('PING', (e) => console.log("write e: ", e));
+        port.on('data', (data) => console.log("-----------data: ", data));
+    });
+    port.on('error', function (err) {
+        console.log('Error: ', err.message);
+    })
 }
 
 module.exports = { ping };
