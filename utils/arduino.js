@@ -1,6 +1,12 @@
 const { SerialPort } = require('serialport');
 
-const port = new SerialPort('/dev/ttyAMA0', { baudRate: 9600 });
+const port = new SerialPort({
+    path: '/dev/ttyAMA0',
+    baudRate: 19200,
+    dataBits: 8,
+    stopBits: 1,
+    parity: 'none',
+});
 const Readline = SerialPort.parsers.Readline;
 const parser = new Readline();
 
