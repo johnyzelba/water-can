@@ -9,7 +9,7 @@ const port = new SerialPort({
 });
 
 const ping = async () => {
-    console.log(`GETTING LATEST PLANTS REPORTS FROM DB`);
+    console.log(`PINGING ARDUINO`);
     port.on('data', (data) => console.log("-----------data: ", data));
     port.write('PING');
     

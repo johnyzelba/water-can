@@ -104,12 +104,11 @@ const db = new sqlite3.Database('/home/johny/water-can/WaterCan.db', (err) => {
                     return console.error(err.message, db);
                 }
                 console.log('DB CONNECTION CLOSED');
-                ping();
             });
             return error;
         }
         console.log("SERVER IS RUNNING");
-        
+        ping();
         // sendMsgToUser(`Server started`);
     });
 });
