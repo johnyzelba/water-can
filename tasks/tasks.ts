@@ -1,8 +1,10 @@
-const { getPlants, getPlant } = require('../utils/plants');
-const { getLatestPlantsReports } = require('../utils/plantReports');
-const { sendMsgToUser } = require('../utils/telegramBot');
-const { validateWaterCan, fillWaterCan, addNutritions, resetWaterValve, getFlowAmount } = require('../utils/waterCan');
-const { SOIL_MOISTURE_WATERING_THRESHOLD } = require('../utils/consts');
+import { Plant } from "../utils/plants";
+
+import { getPlants, getPlant } from '../utils/plants';
+import { getLatestPlantsReports } from '../utils/plantReports';
+import { sendMsgToUser } from '../utils/telegramBot';
+import { validateWaterCan, fillWaterCan, addNutritions, resetWaterValve, getFlowAmount } from '../utils/waterCan';
+import { SOIL_MOISTURE_WATERING_THRESHOLD } from '../utils/consts';
 
 
 const getPlantsPendingAndInProgressTasks = async (db, plantReports) => {
@@ -37,9 +39,23 @@ const getPlantsPendingAndInProgressTasks = async (db, plantReports) => {
     }));
 };
 
-const getPendingTasks = async (db) => {
+type TaskRow = {
+    id: number,
+    plant_id: number,
+    status: string,
+    timestamp: string
+};
+
+type Task = {
+    id: number,
+    plantId: number,
+    status: string,
+    timestamp: string
+};
+
+const getPendingTasks = async (db): Promise<Task[]> => {
     console.log(`GETTING PENDING TASKS FROM DB`);
-    const tasksInProgressRows = await new Promise(function (resolve, reject) {
+    const tasksInProgressRows: TaskRow[] = await new Promise(function (resolve, reject) {
         db.all(
             `SELECT * FROM tasks 
                 WHERE  status = 'PENDING'
@@ -110,7 +126,7 @@ const updateTaskStatus = async (db, taskId, status) => {
 };
 
 
-const generateTasksIfNeeded = async (db,) => {
+export const generateTasksIfNeeded = async (db,) => {
     try {
         await db.serialize(async () => {
             const plants = await getPlants(db);
@@ -138,7 +154,7 @@ const generateTasksIfNeeded = async (db,) => {
     return true;
 };
 
-const runTaskIfNeeded = async (db) => {
+export const runTaskIfNeeded = async (db) => {
     try {
         await db.serialize(async () => {
             const tasks = await getPendingTasks(db);
@@ -157,7 +173,7 @@ const runTaskIfNeeded = async (db) => {
                     sendMsgToUser(`Filling water can for plant: ${validTasks[0].plant.name}(${validTasks[0].plant.id})`);
                     // await updateTaskStatus(db, runningTask.id, "IN_PROGRESS");
 
-                    // await fillWaterCan(validTasks[0].plant.potSize);
+                    await fillWaterCan(validTasks[0].plant.potSize);
                     await addNutritions(validTasks[0].plant.potSize, validTasks[0].plant.n, validTasks[0].plant.p, validTasks[0].plant.k);
 
                     // await updateTaskStatus(db, runningTask.id, "DONE");
@@ -176,7 +192,7 @@ const runTaskIfNeeded = async (db) => {
                 await resetWaterValve();
                 const isWaterFlowing = (await (getFlowAmount())) > 0;
                 if (isWaterFlowing) {
-                    await new Promise((res) => setTimeout(() => res(sendMsgToUser("Water is flowing before task started!!!"), 10000)));
+                    await new Promise((res) => setTimeout(() => res(sendMsgToUser("Water is flowing before task started!!!")), 10000));
                 }
             }
         }
@@ -187,9 +203,11 @@ const runTaskIfNeeded = async (db) => {
     return true;
 };
 
-const validateTasks = async (db, tasks) => {
+type ValidTask = { task: Task, plant: Plant, test: string };
+
+const validateTasks = async (db, tasks: Task[]): Promise<ValidTask[]> => {
     console.log("VALIDATING TASKS");
-    const validTasks = [];
+    const validTasks: ValidTask[] = [];
     for (const runningTask of tasks) {
         const latestPlantReport = (await getLatestPlantsReports(db, [{ id: runningTask.plantId }]))[0];
         const plant = (await getPlant(db, runningTask.plantId))[0];

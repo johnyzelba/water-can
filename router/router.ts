@@ -5,9 +5,11 @@ const { toMAC } = require('@network-utils/arp-lookup');
 const { getPlants } = require('../utils/plants');
 const { createPlantsReports } = require('../utils/plantReports');
 
-const getRouters = async (db) => {
+type RouterRow = { id: number, name: string, mac: string, ip: string };
+
+const getRouters = async (db): Promise<Omit<RouterRow, 'ip'>[]> => {
     console.log(`GETTING ROUTERS FROM DB`);
-    const routerRows = await new Promise(function (resolve, reject) {
+    const routerRows: Omit<RouterRow, 'ip'>[] = await new Promise(function (resolve, reject) {
         return db.all(
             `SELECT * FROM routers`,
             (err, rows) => {
@@ -26,8 +28,8 @@ const getRouters = async (db) => {
     }));
 };
 
-const scanIps = async () => {
-    const list = [];
+const scanIps = async (): Promise<any[]> => {
+    const list: any[] = [];
     const options = {
         target: '192.168.1.1-189.168.255.255',
         port: '6069',
@@ -44,7 +46,7 @@ const scanIps = async () => {
                 list.push(data);
             });
             evilscan.on('error', err => {
-                reject(new Error(data.toString()));
+                reject(new Error(err));
             });
             evilscan.on('done', () => {
                 console.log(`FOUND ${list.length}  IP ADDRESSES WITH OPEN PORT`);
@@ -55,10 +57,11 @@ const scanIps = async () => {
         });
     } catch (error) {
         console.log(error);
+        return [];
     }
 };
 
-const getMacByIps = async (ipList) => {
+export const getMacByIps = async (ipList): Promise<RouterRow[]> => {
     console.log("GETTING MAC ADDRESSES OF SCANED IPS");
     try {
         const macAddrsPromises = ipList.map(ipObj => toMAC(ipObj.ip));
@@ -71,6 +74,7 @@ const getMacByIps = async (ipList) => {
         return filteredMacIpsAddrs;
     } catch (error) {
         console.log(error);
+        return [];
     }
 };
 
@@ -89,9 +93,17 @@ const getDataFromRouter = async (ip) => {
 
 };
 
-const getDataFromRouterAndSave = async (db, routersWithIp) => {
+type DataFromRouter = {
+    temperture: number,
+    soilMoisture: number,
+    soilConductivity: number,
+    light: number,
+    plantId: number
+}
+
+export const getDataFromRouterAndSave = async (db, routersWithIp): Promise<DataFromRouter[]> => {
     try {
-        await db.serialize(async () => {
+        return (await db.serialize(async () => {
             const plants = await getPlants(db);
             const promises = routersWithIp.map(routerWithIp => getDataFromRouter(routerWithIp.ip));
             const responses = await Promise.all(promises);
@@ -115,18 +127,18 @@ const getDataFromRouterAndSave = async (db, routersWithIp) => {
                     light: dataElement.light,
                     plantId
                 })
-            })
+            }) || [];
             const isSaved = await createPlantsReports(db, dataToSave);
 
-            return isSaved ? dataToSave : false;
-        });
+            return dataToSave;
+        }));
     } catch (e) {
         console.log(e);
-        return false;
+        return [];
     }
 };
 
-const getRouterIps = async (db) => {
+export const getRouterIps = async (db) => {
     const ipScanRes = await scanIps();
 
     if (ipScanRes && !ipScanRes.length) {
@@ -141,7 +153,7 @@ const getRouterIps = async (db) => {
         return false;
     }
 
-    const routersIps = []
+    const routersIps: RouterRow[] = []
 
     macIpsList.map(macIp => {
         routers.map(router => {
@@ -153,5 +165,3 @@ const getRouterIps = async (db) => {
     console.log(`FOUND ${routersIps.length} ONLINE ROUTERS`);
     return routersIps;
 };
-
-module.exports = { getDataFromRouterAndSave, getRouterIps, getMacByIps };

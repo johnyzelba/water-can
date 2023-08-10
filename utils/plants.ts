@@ -1,6 +1,28 @@
-const getPlants = async (db) => {
+type PlantRow = {
+    id: string,
+    name: string,
+    mac: string,
+    router_mac: string,
+    pot_size: number,
+    n: number,
+    p: number,
+    k: number
+}
+
+export type Plant = {
+    id: string,
+    name: string,
+    mac: string,
+    routerMac: string,
+    potSize: number,
+    n: number,
+    p: number,
+    k: number
+}
+
+export const getPlants = async (db): Promise<Plant[]> => {
     console.log(`GETTING PLANTS FROM DB`);
-    const plantRows = await new Promise(function (resolve, reject) {
+    const plantRows: PlantRow[] = await new Promise(function (resolve, reject) {
         return db.all(
             `SELECT * FROM plants`,
             (err, rows) => {
@@ -24,9 +46,9 @@ const getPlants = async (db) => {
     }));
 };
 
-const getPlant = async (db, plantId) => {
+export const getPlant = async (db, plantId): Promise<Plant[]> => {
     console.log(`GETTING PLANTS FROM DB`);
-    const plantRows = await new Promise(function (resolve, reject) {
+    const plantRows: PlantRow[] = await new Promise(function (resolve, reject) {
         return db.all(
             `SELECT * FROM plants WHERE id = ${plantId}`,
             (err, rows) => {
@@ -49,5 +71,3 @@ const getPlant = async (db, plantId) => {
         k: row.k
     }));
 };
-
-module.exports = { getPlants, getPlant };

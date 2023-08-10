@@ -1,16 +1,16 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const axios = require('axios');
-const axiosRetry = require('axios-retry');
+import express from 'express';
+import bodyParser from 'body-parser';
+import axios from 'axios';
+import axiosRetry from 'axios-retry';
 // const cron = require('node-cron');
-const sqlite3 = require('sqlite3').verbose();
+import sqlite3 from 'sqlite3';
 const app = express();
-const path = require('path');
-const { sendMsgToUser } = require('./utils/telegramBot');
-const { getDataFromRouterAndSave, getRouterIps } = require("./router/router");
-const { generateTasksIfNeeded, runTaskIfNeeded } = require("./tasks/tasks");
-const { startTransaction, endTransaction } = require('./utils/transactions');
-const { ping } = require('./utils/arduino');
+import path from 'path';
+import { sendMsgToUser } from './utils/telegramBot';
+import { getDataFromRouterAndSave, getRouterIps } from './router/router';
+import { generateTasksIfNeeded, runTaskIfNeeded } from './tasks/tasks';
+import { startTransaction, endTransaction } from './utils/transactions';
+
 path.resolve(__dirname, '../../../dev.sqlite3');
 
 axiosRetry(axios, {
@@ -108,8 +108,6 @@ const db = new sqlite3.Database('/home/johny/water-can/WaterCan.db', (err) => {
             return error;
         }
         console.log("SERVER IS RUNNING");
-        const response = await ping();
-        console.log("---------------", response);
         // sendMsgToUser(`Server started`);
     });
 });

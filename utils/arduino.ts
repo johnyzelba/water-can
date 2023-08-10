@@ -1,9 +1,14 @@
-const { SerialPort } = require('serialport');
-const { ReadlineParser } = require('@serialport/parser-readline')
+import { SerialPort } from 'serialport';
+import { ReadlineParser } from '@serialport/parser-readline';
 
+export enum RequestTypes {
+    PING = "PING",
+    DISTANCE = "DISTANCE",
+    RFID = "RFID",
+    FLOW = "FLOW"
+};
 
-
-const ping = async () => {
+export const getDataFromArduino = async (request: RequestTypes):Promise<any> => {
     console.log(`PINGING ARDUINO`);
     const port = new SerialPort({
         path: '/dev/ttyUSB0',
@@ -13,15 +18,13 @@ const ping = async () => {
 
     return new Promise((res,rej) => {
         port.on('open', () => {
-            setTimeout(() => port.write('PING'), 1500);
+            setTimeout(() => port.write(request), 1500);
             parser.on('data', (data) => {
                 res(JSON.parse(data))
             });
         });
         port.on('error', function (err) {
-            rej('Error: ', err.message);
+            rej(err.message);
         });
     });
-}
-
-module.exports = { ping };
+};

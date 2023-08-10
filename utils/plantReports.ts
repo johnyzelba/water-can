@@ -1,4 +1,4 @@
-const getLatestPlantsReports = async (db, plants) => {
+export const getLatestPlantsReports = async (db, plants) => {
     console.log(`GETTING LATEST PLANTS REPORTS FROM DB`);
     const plantReportRows = (await Promise.all(
         plants.map(async plant =>
@@ -24,9 +24,9 @@ const getLatestPlantsReports = async (db, plants) => {
         soilMoisture: row.soil_moisture,
         timestamp: row.timestamp
     }));
-}
+};
 
-const createPlantsReports = async (db, plantReports) => {
+export const createPlantsReports = async (db, plantReports) => {
     console.log(`SAVING REPORTS TO DB`);
     const res = (await Promise.all(
         plantReports.map(plantReport => {
@@ -61,6 +61,4 @@ const createPlantsReports = async (db, plantReports) => {
         })
     ));
     console.log(`${res.length || "NO"} NEW PLANT REPORTS CREATED`);
-}
-
-module.exports = { getLatestPlantsReports, createPlantsReports };
+};

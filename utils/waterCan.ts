@@ -1,5 +1,4 @@
-
-const { 
+import {
     MAX_LITERS_IN_WATER_CAN,
     MS_TO_DOSE_ONE_ML,
     LITERS_TO_POT_SIZE_RATIO,
@@ -10,9 +9,10 @@ const {
     PHOSPHORUSPUMPPIN,
     POTASSIUMPUMPPIN,
     STIRRERPIN,
-    WATERFLOWPIN 
-} = require('./consts');
-const Gpio = require('onoff').Gpio;
+    WATERFLOWPIN
+} from './consts';
+import { Gpio }  from 'onoff';
+import { RequestTypes , getDataFromArduino } from './arduino';
 
 const waterSelanoid = new Gpio(WATERSELANOIDPIN, 'out');
 const nitrogenPump = new Gpio(NITROGENPUMPPIN, 'out');
@@ -28,10 +28,14 @@ stirrer.writeSync(1);
 waterSelanoid.writeSync(1);
 
 const getDistance = async () => {
-    return 0;
+    const response: { distanceA: number, distanceB: number} = await getDataFromArduino(RequestTypes.DISTANCE);
+    if (Math.abs(response.distanceA - response.distanceB) > 3) {
+        throw "SOMETHING'S WRONG! (delta between distance sensors is to high)";
+    }
+    return (response.distanceA + response.distanceB) / 2;
 }
 
-const validateWaterCan = async () => {
+export const validateWaterCan = async () => {
     console.log("VALIDATING WATER CAN");
     if (!(await isWaterCanInPlace())) {
         throw "WATER CAN NOT IN PLACE";
@@ -55,24 +59,20 @@ const isWaterCanEnmpty = async () => {
     return (await getAmountOfLiquidInWaterCan()) === 0;
 };
 
-const getAmountOfLiquidInWaterCan = async () => {
-    await (async () => {
-            console.log(`CHECKING THE AMOUNT OF LIQUID IN THE WATER CAN`);
-            const distance = await getDistance();
-            const normalisedDistanceToRatio = (distance - MAX_DISTANCE_FROM_SENSOR_IN_CM) / (MIN_DISTANCE_FROM_SENSOR_IN_CM - MAX_DISTANCE_FROM_SENSOR_IN_CM);
-            const amountOfLiquidInWaterCan = normalisedDistanceToRatio * MAX_LITERS_IN_WATER_CAN;
-            
+const getAmountOfLiquidInWaterCan = async (): Promise<number> => {
+        console.log(`CHECKING THE AMOUNT OF LIQUID IN THE WATER CAN`);
+        const distance = await getDistance();
+        const normalisedDistanceToRatio = (distance - MAX_DISTANCE_FROM_SENSOR_IN_CM) / (MIN_DISTANCE_FROM_SENSOR_IN_CM - MAX_DISTANCE_FROM_SENSOR_IN_CM);
+        const amountOfLiquidInWaterCan = normalisedDistanceToRatio * MAX_LITERS_IN_WATER_CAN; 
         return await new Promise((res) => setTimeout(() => res(amountOfLiquidInWaterCan), 2000))
-    })();
-    // return amountOfLiquidInWaterCan;
 };
 
-const getFlowAmount = async () => {
+export const getFlowAmount = async () => {
     console.log(`CHECKING THE AMOUNT OF FLOWING WATER`);
     return 0;
 };
 
-const fillWaterCan = async (potSize) => {
+export const fillWaterCan = async (potSize) => {
     console.log(`FILLING WATER CAN WITH WATER`);
     const neededAmountOfWaterInLiters = calcNeededAmountOfWaterInLiters(potSize);
     const startTime = new Date();
@@ -85,7 +85,7 @@ const fillWaterCan = async (potSize) => {
         waterSelanoid.writeSync(0);
         await new Promise((res) => setTimeout(() => res(waterSelanoid.writeSync(1)), 5000));
         currentTime = new Date();
-        diffMins = Math.round((((currentTime - startTime) % 86400000) % 3600000) / 60000);
+        diffMins = Math.round((((currentTime.getTime() - startTime.getTime()) % 86400000) % 3600000) / 60000);
         amountOfLiquidInWaterCanArr.push(await getAmountOfLiquidInWaterCan());
         iterations++;
 
@@ -99,12 +99,12 @@ const fillWaterCan = async (potSize) => {
     return;
 };
 
-const resetWaterValve = async () => {
+export const resetWaterValve = async () => {
     waterSelanoid.writeSync(0);
     await new Promise((res) => setTimeout(() => res(waterSelanoid.writeSync(1)), 10)); 
 };
 
-const addNutritions = async (potSize, nitrogen, phosphorus, potassium) => {
+export const addNutritions = async (potSize, nitrogen, phosphorus, potassium) => {
     console.log(`ADDING NUTRIENTS TO WATER CAN`);
     const neededAmountOfWaterInLiters = calcNeededAmountOfWaterInLiters(potSize);
     const neededNitrogen = nitrogen * neededAmountOfWaterInLiters;
@@ -139,5 +139,3 @@ const calcNeededAmountOfWaterInLiters = (potSize) => {
     const litersPerPot = potSize / LITERS_TO_POT_SIZE_RATIO;
     return litersPerPot < MAX_LITERS_IN_WATER_CAN ? litersPerPot : MAX_LITERS_IN_WATER_CAN;
 }
-
-module.exports = { validateWaterCan, fillWaterCan, addNutritions, resetWaterValve, getFlowAmount };
