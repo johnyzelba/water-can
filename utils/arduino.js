@@ -10,21 +10,13 @@ const ping = async () => {
         baudRate: 9600,
     });
     const parser = port.pipe(new ReadlineParser({ delimiter: '\r\n' }));
-    console.log("---------------1");
 
     return new Promise((res,rej) => {
         port.on('open', () => {
             setInterval(() => port.write('PING'), 1000);
-            console.log("---------------2");
-
             parser.on('data', (data) => {
-                console.log("---------------", data);
-                console.log("---------------", JSON.parse(data));
                 res(JSON.parse(data))
             });
-            port.write('PING');
-            port.write('PING');
-            port.write('PING');
         });
         port.on('error', function (err) {
             rej('Error: ', err.message);
