@@ -108,7 +108,8 @@ const db = new sqlite3.Database('/home/johny/water-can/WaterCan.db', (err) => {
             return error;
         }
         console.log("SERVER IS RUNNING");
-        ping();
+        const response = await ping();
+        console.log("---------------", response);
         // sendMsgToUser(`Server started`);
     });
 });
