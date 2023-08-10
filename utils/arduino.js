@@ -13,6 +13,8 @@ const ping = async () => {
     return new Promise((res,rej) => {
         port.on('open', () => {
             port.write('PING');
+            port.write('PING');
+            port.write('PING');
             parser.on('data', (data) => {
                 console.log("---------------", data);
                 console.log("---------------", JSON.parse(data));
