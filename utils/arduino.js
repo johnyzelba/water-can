@@ -12,7 +12,11 @@ const ping = async () => {
     return new Promise((res,rej) => {
         port.on('open', () => {
             port.write('PING');
-            parser.on('data', (data) => res(JSON.parse(data)));
+            parser.on('data', (data) => {
+                console.log("---------------", data);
+                console.log("---------------", JSON.parse(data));
+                res(JSON.parse(data))
+            });
         });
         port.on('error', function (err) {
             rej('Error: ', err.message);
