@@ -11,7 +11,8 @@ const ping = async () => {
     });
     console.log(`PINGING ARDUINO`);
     port.on('open', () => {
-        port.write('PING', (e) => console.log("write e: ", e));
+        port.write('PING/n', (e) => console.log("write e: ", e));
+        port.write('PING/N', (e) => console.log("write e: ", e));
         port.on('data', (data) => console.log("-----------data: ", data));
     });
     port.on('error', function (err) {
