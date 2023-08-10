@@ -12,14 +12,15 @@ const ping = async () => {
     const parser = port.pipe(new ReadlineParser({ delimiter: '\r\n' }));
     return new Promise((res,rej) => {
         port.on('open', () => {
-            port.write('PING');
-            port.write('PING');
-            port.write('PING');
+
             parser.on('data', (data) => {
                 console.log("---------------", data);
                 console.log("---------------", JSON.parse(data));
                 res(JSON.parse(data))
             });
+            port.write('PING');
+            port.write('PING');
+            port.write('PING');
         });
         port.on('error', function (err) {
             rej('Error: ', err.message);
