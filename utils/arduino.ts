@@ -20,6 +20,11 @@ export const getDataFromArduino = async (request: RequestTypes):Promise<any> => 
         port.on('open', () => {
             setTimeout(() => port.write(request), 1500);
             parser.on('data', (data) => {
+                port.close(function (err) {
+                    if (err) {
+                        rej(err.message);
+                    }
+                });
                 res(JSON.parse(data))
             });
         });
