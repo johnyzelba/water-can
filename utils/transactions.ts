@@ -9,3 +9,9 @@ export const endTransaction = async (db) => {
         db.run('commit', (err, rows) => err ? reject(err) : resolve(rows))
     });
 };
+
+export const rollbackTransaction = async (db) => {
+    return new Promise(function (resolve, reject) {
+        db.run('rollback', (err, rows) => err ? reject(err) : resolve(rows))
+    });
+};

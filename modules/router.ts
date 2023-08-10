@@ -1,8 +1,8 @@
 import axios from 'axios';
 import Evilscan from  'evilscan';
 import { toMAC } from '@network-utils/arp-lookup'
-import { getPlants } from  '../utils/plants';
-import { createPlantsReports } from  '../utils/plantReports';
+import { getPlants } from  './plants';
+import { createPlantsReports } from  './plantReports';
 
 type RouterRow = { id: number, name: string, mac: string, ip: string };
 

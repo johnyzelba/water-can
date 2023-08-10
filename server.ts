@@ -6,10 +6,10 @@ import axiosRetry from 'axios-retry';
 import sqlite3 from 'sqlite3';
 const app = express();
 import path from 'path';
-import { sendMsgToUser } from './utils/telegramBot';
-import { getDataFromRouterAndSave, getRouterIps } from './router/router';
-import { generateTasksIfNeeded, runTaskIfNeeded } from './tasks/tasks';
-import { startTransaction, endTransaction } from './utils/transactions';
+import { sendMsgToUser } from './modules/telegramBot';
+import { getDataFromRouterAndSave, getRouterIps } from './modules/router';
+import { generateTasksIfNeeded, runTaskIfNeeded } from './modules/tasks';
+import { startTransaction, endTransaction, rollbackTransaction } from './utils/transactions';
 
 path.resolve(__dirname, '../../../dev.sqlite3');
 
@@ -23,24 +23,6 @@ axiosRetry(axios, {
         return true;
     },
 });
-
-Object.defineProperty(Array.prototype, 'flat', {
-    value: function (depth = 1) {
-        return this.reduce(function (flat, toFlatten) {
-            return flat.concat((Array.isArray(toFlatten) && (depth > 1)) ? toFlatten.flat(depth - 1) : toFlatten);
-        }, []);
-    }
-});
-
-app.all('/*', function (req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Accept");
-    res.header("Access-Control-Allow-Methods", "POST, GET");
-    next();
-});
-
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
 
 // cron.schedule("* * * * *", async () => {
 // try {
@@ -59,6 +41,16 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // }
 // });
 
+app.all('/*', function (req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Accept");
+    res.header("Access-Control-Allow-Methods", "POST, GET");
+    next();
+});
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+
 app.get('/runtask', async function (req, res) {
     try {
         await startTransaction(db);
@@ -66,7 +58,7 @@ app.get('/runtask', async function (req, res) {
         await endTransaction(db);
         res.send({ })
     } catch (error) {
-        await endTransaction(db);
+        await rollbackTransaction(db);
         res.send({ 'ok': false, 'msg': error });
     }
 });
@@ -85,7 +77,7 @@ app.get('/scanplants', async function (req, res) {
         await endTransaction(db);
         res.send({ newPlantReports })
     } catch (error) {
-        await endTransaction(db);
+        await rollbackTransaction(db);
         res.send({ 'ok': false, 'msg': error });
     }
 });

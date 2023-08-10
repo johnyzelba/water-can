@@ -10,7 +10,7 @@ import {
     POTASSIUMPUMPPIN,
     STIRRERPIN,
     WATERFLOWPIN
-} from './consts';
+} from '../utils/consts';
 import { Gpio }  from 'onoff';
 import { RequestTypes , getDataFromArduino } from './arduino';
 
@@ -54,7 +54,8 @@ export const validateWaterCan = async () => {
 
 const isWaterCanInPlace = async () => {
     console.log(`CHECKING IF WATER CAN IS IN PLACE`);
-    return (await getAmountOfLiquidInWaterCan()) >= 0;
+    const response: { success: true } | undefined = await getDataFromArduino(RequestTypes.RFID);
+    return response?.success;
 };
 
 const isWaterCanEnmpty = async () => {
@@ -72,7 +73,8 @@ const getAmountOfLiquidInWaterCan = async (): Promise<number> => {
 
 export const getFlowAmount = async () => {
     console.log(`CHECKING THE AMOUNT OF FLOWING WATER`);
-    return 0;
+    const response: { flow: number }  = await getDataFromArduino(RequestTypes.FLOW);
+    return response.flow;
 };
 
 export const fillWaterCan = async (potSize) => {
@@ -141,4 +143,4 @@ export const addNutritions = async (potSize, nitrogen, phosphorus, potassium) =>
 const calcNeededAmountOfWaterInLiters = (potSize) => {
     const litersPerPot = potSize / LITERS_TO_POT_SIZE_RATIO;
     return litersPerPot < MAX_LITERS_IN_WATER_CAN ? litersPerPot : MAX_LITERS_IN_WATER_CAN;
-}
+};

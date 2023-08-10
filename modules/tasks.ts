@@ -1,9 +1,9 @@
-import { Plant } from "../utils/plants";
+import { Plant } from "./plants";
 
-import { getPlants, getPlant } from '../utils/plants';
-import { getLatestPlantsReports } from '../utils/plantReports';
-import { sendMsgToUser } from '../utils/telegramBot';
-import { validateWaterCan, fillWaterCan, addNutritions, resetWaterValve, getFlowAmount } from '../utils/waterCan';
+import { getPlants, getPlant } from './plants';
+import { getLatestPlantsReports } from './plantReports';
+import { sendMsgToUser } from './telegramBot';
+import { validateWaterCan, fillWaterCan, addNutritions, resetWaterValve, getFlowAmount } from './waterCan';
 import { SOIL_MOISTURE_WATERING_THRESHOLD } from '../utils/consts';
 
 
@@ -69,8 +69,6 @@ const getPendingTasks = async (db): Promise<Task[]> => {
             }
         )
     });
-    console.log(tasksInProgressRows);
-
     console.log(`FOUND ${tasksInProgressRows.length} PENDING TASKS`);
     return tasksInProgressRows.map(row => ({
         id: row.id,
