@@ -1,19 +1,18 @@
 const { SerialPort } = require('serialport');
-
+const Readline = require('@serialport/parser-readline');
 
 
 const ping = async () => {
     const port = new SerialPort({
         path: '/dev/ttyUSB0',
         baudRate: 9600,
-    }, function (err) {
-        console.log('Error: ', err);
     });
+    const parser = port.pipe(new Readline({ delimiter: '\n' }));
+
     console.log(`PINGING ARDUINO`);
     port.on('open', () => {
-        port.write('PING\n', (e) => console.log("write e: ", e));
-        port.write('PING\N', (e) => console.log("write e: ", e));
-        port.on('data', (data) => console.log("-----------data: ", data));
+        parser.write('PING');
+        parser.on('data', (data) => console.log("-----------data: ", data));
     });
     port.on('error', function (err) {
         console.log('Error: ', err.message);
