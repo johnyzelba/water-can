@@ -154,6 +154,8 @@ export const generateTasksIfNeeded = async (db,) => {
 
 export const runTaskIfNeeded = async (db) => {
     try {
+        await validateWaterCan();
+
         await db.serialize(async () => {
             const tasks = await getPendingTasks(db);
             const validTasks = await validateTasks(db, tasks);
@@ -165,7 +167,6 @@ export const runTaskIfNeeded = async (db) => {
             if (!validTasks || !validTasks.length) {
                 throw "NO VALID PENDING TASKS";
             }
-            await validateWaterCan();
             try {
                 console.log(`RUNNING TASK ID: ${validTasks[0].plant.name}(${validTasks[0].task.id})`);
                     sendMsgToUser(`Filling water can for plant: ${validTasks[0].plant.name}(${validTasks[0].plant.id})`);
