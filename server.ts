@@ -44,26 +44,26 @@ let isTaskRunning = false;
 // }
 // });
 
-cron.schedule("* * * * *", async () => {
-    try {
-        isTaskRunning = true;
-        await startTransaction(db);
-        await runTaskIfNeeded(db);
-        await endTransaction(db);
-        isTaskRunning = false;
-    } catch (error) {
-        await rollbackTransaction(db);
-        isTaskRunning = false;
-    }
-});
+// cron.schedule("* * * * *", async () => {
+//     try {
+//         isTaskRunning = true;
+//         await startTransaction(db);
+//         await runTaskIfNeeded(db);
+//         await endTransaction(db);
+//         isTaskRunning = false;
+//     } catch (error) {
+//         await rollbackTransaction(db);
+//         isTaskRunning = false;
+//     }
+// });
 
-cron.schedule("* * * * *", async () => {
-    if (!isTaskRunning && isWaterFlowing()) {
-        const err = `SOMETHING'S WRONG! (water is flowing and should not)`;
-        console.error(err);
-        sendMsgToUser(err);
-    }
-});
+// cron.schedule("* * * * *", async () => {
+//     if (!isTaskRunning && isWaterFlowing()) {
+//         const err = `SOMETHING'S WRONG! (water is flowing and should not)`;
+//         console.error(err);
+//         sendMsgToUser(err);
+//     }
+// });
 
 
 app.all('/*', function (req, res, next) {

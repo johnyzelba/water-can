@@ -67,7 +67,7 @@ export const isWaterFlowing = async () => {
         console.log("DEBUGING: WATER FLOW: ", response.flow);
     }
 
-    return response.flow === 0;
+    return response.flow == 0;
 };
 
 const getAmountOfLiquidInWaterCan = async (): Promise<number> => {
