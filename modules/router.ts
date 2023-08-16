@@ -30,7 +30,7 @@ const getRouters = async (db): Promise<Omit<RouterRow, 'ip'>[]> => {
 const scanIps = async (): Promise<any[]> => {
     const list: any[] = [];
     const options = {
-        target: '192.168.1.1-189.168.255.255',
+        target: '192.168.1.1-192.168.255.255',
         port: '6069',
         status: 'O', // Timeout, Refused, Open, Unreachable
         banner: true

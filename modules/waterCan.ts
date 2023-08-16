@@ -48,7 +48,7 @@ export const validateWaterCan = async () => {
 
 const isWaterCanInPlace = async () => {
     console.log(`CHECKING IF WATER CAN IS IN PLACE`);
-    const response: { success: boolean } | undefined = await getDataFromArduino(RequestTypes.RFID).catch(e => ({ success: false }));
+    const response: { success: boolean, info?: string } | undefined = await getDataFromArduino(RequestTypes.RFID).catch(e => ({ success: false, info: e }));
     if (DEBUGING) {
         console.log("DEBUGING: RFID RES: ", response);
     }
