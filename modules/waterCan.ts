@@ -36,6 +36,7 @@ const getDistance = async () => {
     if (Math.abs(response.distanceA - response.distanceB) > 3) {
         throw "SOMETHING'S WRONG! (delta between distance sensors is to high)";
     }
+    console.log("-------DEBUGING? ", DEBUGING);
     if (DEBUGING) {
         console.log("DEBUGING: DISTANCES: ", response.distanceA, " | ", response.distanceB);
     }

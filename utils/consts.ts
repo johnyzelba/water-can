@@ -1,8 +1,9 @@
 import dotenv from 'dotenv'
 dotenv.config();
 
+console.log("-------process.env.DEBUGING", process.env.DEBUGING);
 // General
-export const DEBUGING = !!process.env.DEBUGING;
+export const DEBUGING = !!process.env.DEBUGING || process.env.DEBUGING === "true";
 export const MICROSECDONDS_PER_CM = 1e6 / 34321;
 export const SOIL_MOISTURE_WATERING_THRESHOLD = 15;
 export const MAX_LITERS_IN_WATER_CAN = 2;
