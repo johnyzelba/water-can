@@ -3,7 +3,7 @@ import { Plant } from "./plants";
 import { getPlants, getPlant } from './plants';
 import { getLatestPlantsReports } from './plantReports';
 import { sendMsgToUser } from './telegramBot';
-import { validateWaterCan, fillWaterCan, addNutritions, resetWaterValve, getFlowAmount } from './waterCan';
+import { validateWaterCan, fillWaterCan, addNutritions, resetWaterValve, isWaterFlowing } from './waterCan';
 import { SOIL_MOISTURE_WATERING_THRESHOLD } from '../utils/consts';
 
 
@@ -165,7 +165,7 @@ export const runTaskIfNeeded = async (db) => {
             if (!validTasks || !validTasks.length) {
                 throw "NO VALID PENDING TASKS";
             }
-            // await validateWaterCan();
+            await validateWaterCan();
             try {
                 console.log(`RUNNING TASK ID: ${validTasks[0].plant.name}(${validTasks[0].task.id})`);
                     sendMsgToUser(`Filling water can for plant: ${validTasks[0].plant.name}(${validTasks[0].plant.id})`);
@@ -185,13 +185,10 @@ export const runTaskIfNeeded = async (db) => {
         });
     }
     catch (e) {
-        if (e === "WATER IS FLOWING BEFORE TASK STARTED") {
-            for (const _ of new Array(50).fill(true)) {
-                await resetWaterValve();
-                const isWaterFlowing = (await (getFlowAmount())) > 0;
-                if (isWaterFlowing) {
-                    await new Promise((res) => setTimeout(() => res(sendMsgToUser("Water is flowing before task started!!!")), 10000));
-                }
+        if (e.includes("(WATER FLOW)")) {
+            await resetWaterValve();
+            if (isWaterFlowing()) {
+                sendMsgToUser(e);
             }
         }
         console.log(e);

@@ -2,7 +2,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
-// const cron = require('node-cron');
+const cron = require('node-cron');
 import sqlite3 from 'sqlite3';
 const app = express();
 import path from 'path';
@@ -10,6 +10,7 @@ import { sendMsgToUser } from './modules/telegramBot';
 import { getDataFromRouterAndSave, getRouterIps } from './modules/router';
 import { generateTasksIfNeeded, runTaskIfNeeded } from './modules/tasks';
 import { startTransaction, endTransaction, rollbackTransaction } from './utils/transactions';
+import { isWaterFlowing } from './modules/waterCan';
 
 path.resolve(__dirname, '../../../dev.sqlite3');
 
@@ -24,6 +25,8 @@ axiosRetry(axios, {
     },
 });
 
+let isTaskRunning = false;
+
 // cron.schedule("* * * * *", async () => {
 // try {
 //     await startTransaction(db);
@@ -37,9 +40,31 @@ axiosRetry(axios, {
 //     }
 //     await endTransaction(db);
 // } catch (error) {
-//     await endTransaction(db);
+//     await rollbackTransaction(db);
 // }
 // });
+
+cron.schedule("* * * * *", async () => {
+    try {
+        isTaskRunning = true;
+        await startTransaction(db);
+        await runTaskIfNeeded(db);
+        await endTransaction(db);
+        isTaskRunning = false;
+    } catch (error) {
+        await rollbackTransaction(db);
+        isTaskRunning = false;
+    }
+});
+
+cron.schedule("* * * * *", async () => {
+    if (!isTaskRunning && isWaterFlowing()) {
+        const err = `SOMETHING'S WRONG! (water is flowing and should not)`;
+        console.error(err);
+        sendMsgToUser(err);
+    }
+});
+
 
 app.all('/*', function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
@@ -53,12 +78,15 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 app.get('/runtask', async function (req, res) {
     try {
+        isTaskRunning = true;
         await startTransaction(db);
         await runTaskIfNeeded(db);
         await endTransaction(db);
+        isTaskRunning = false;
         res.send({ })
     } catch (error) {
         await rollbackTransaction(db);
+        isTaskRunning = false;
         res.send({ 'ok': false, 'msg': error });
     }
 });
@@ -82,7 +110,6 @@ app.get('/scanplants', async function (req, res) {
     }
 });
 
-
 const db = new sqlite3.Database('/home/johny/water-can/WaterCan.db', (err) => {
     if (err) {
         return console.error(err.message);
@@ -91,6 +118,7 @@ const db = new sqlite3.Database('/home/johny/water-can/WaterCan.db', (err) => {
 
     app.listen(6069, async(error) => {
         if (error) {
+            console.error(error);
             db.close((err) => {
                 if (err) {
                     return console.error(err.message, db);

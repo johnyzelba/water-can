@@ -6,12 +6,12 @@ export const startTransaction = async (db) => {
 
 export const endTransaction = async (db) => {
     return new Promise(function (resolve, reject) {
-        db.run('commit', (err, rows) => err ? reject(err) : resolve(rows))
+        db.run('COMMIT', (err, rows) => err ? reject(err) : resolve(rows))
     });
 };
 
 export const rollbackTransaction = async (db) => {
     return new Promise(function (resolve, reject) {
-        db.run('rollback', (err, rows) => err ? reject(err) : resolve(rows))
+        db.run('ROLLBACK', (err, rows) => err ? reject(err) : resolve(rows))
     });
 };

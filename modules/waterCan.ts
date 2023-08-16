@@ -1,16 +1,6 @@
 import {
-    MAX_LITERS_IN_WATER_CAN,
-    MS_TO_DOSE_ONE_ML,
-    LITERS_TO_POT_SIZE_RATIO,
-    MAX_DISTANCE_FROM_SENSOR_IN_CM,
-    MIN_DISTANCE_FROM_SENSOR_IN_CM,
-    WATERSELANOIDPIN,
-    NITROGENPUMPPIN,
-    PHOSPHORUSPUMPPIN,
-    POTASSIUMPUMPPIN,
-    STIRRERPIN,
-    WATERFLOWPIN,
-    DEBUGING
+    MAX_LITERS_IN_WATER_CAN, MS_TO_DOSE_ONE_ML, LITERS_TO_POT_SIZE_RATIO, MAX_DISTANCE_FROM_SENSOR_IN_CM, MIN_DISTANCE_FROM_SENSOR_IN_CM,
+    WATERSELANOIDPIN, NITROGENPUMPPIN, PHOSPHORUSPUMPPIN, POTASSIUMPUMPPIN, STIRRERPIN, DEBUGING
 } from '../utils/consts';
 import { Gpio }  from 'onoff';
 import { RequestTypes , getDataFromArduino } from './arduino';
@@ -20,7 +10,6 @@ const nitrogenPump = new Gpio(NITROGENPUMPPIN, 'out');
 const phosphorusPump = new Gpio(PHOSPHORUSPUMPPIN, 'out');
 const potassiumPump = new Gpio(POTASSIUMPUMPPIN, 'out');
 const stirrer = new Gpio(STIRRERPIN, 'out');
-const waterFlow = new Gpio(WATERFLOWPIN, 'in');
 
 nitrogenPump.writeSync(1);
 phosphorusPump.writeSync(1);
@@ -28,19 +17,19 @@ potassiumPump.writeSync(1);
 stirrer.writeSync(1);
 waterSelanoid.writeSync(1);
 
-const getDistance = async () => {
+const getDistance = async (): Promise<number> => {
     const response: { distanceA: number, distanceB: number} = await getDataFromArduino(RequestTypes.DISTANCE);
+    if (DEBUGING) {
+        console.log("DEBUGING: DISTANCES: ", response.distanceA, " | ", response.distanceB);
+    }
     if (!response.distanceA || !response.distanceB ) {
         throw "SOMETHING'S WRONG! (no response from distance sensors)";
     }
     if (Math.abs(response.distanceA - response.distanceB) > 3) {
         throw "SOMETHING'S WRONG! (delta between distance sensors is to high)";
     }
-    console.log("-------DEBUGING? ", DEBUGING);
-    if (DEBUGING) {
-        console.log("DEBUGING: DISTANCES: ", response.distanceA, " | ", response.distanceB);
-    }
-    return (response.distanceA + response.distanceB) / 2;
+    // set time out is used to enforce wait between calls to sensor (sensonr restriction)
+    return await new Promise((res) => setTimeout(() => res((response.distanceA + response.distanceB) / 2), 2000));
 }
 
 export const validateWaterCan = async () => {
@@ -51,8 +40,8 @@ export const validateWaterCan = async () => {
     if (!(await isWaterCanEnmpty())) {
         throw "WATER CAN NOT EMPTY";
     }
-    if (!(await getFlowAmount())) {
-        throw "WATER IS FLOWING BEFORE TASK STARTED";
+    if (!(await isWaterFlowing())) {
+        throw "SOMETHING'S WRONG (WATER FLOW)! water is flowing abefore task started";
     }
     console.log("WATER CAN IS VALID");
 };
@@ -71,21 +60,22 @@ const isWaterCanEnmpty = async () => {
     return (await getAmountOfLiquidInWaterCan()) === 0;
 };
 
+export const isWaterFlowing = async () => {
+    console.log(`CHECKING IF WATER IF FLOWING`);
+    const response: { flow: 1 | 0 } = await getDataFromArduino(RequestTypes.FLOW);
+    if (DEBUGING) {
+        console.log("DEBUGING: WATER FLOW: ", response.flow);
+    }
+
+    return response.flow === 0;
+};
+
 const getAmountOfLiquidInWaterCan = async (): Promise<number> => {
         console.log(`CHECKING THE AMOUNT OF LIQUID IN THE WATER CAN`);
         const distance = await getDistance();
         const normalisedDistanceToRatio = (distance - MAX_DISTANCE_FROM_SENSOR_IN_CM) / (MIN_DISTANCE_FROM_SENSOR_IN_CM - MAX_DISTANCE_FROM_SENSOR_IN_CM);
         const amountOfLiquidInWaterCan = normalisedDistanceToRatio * MAX_LITERS_IN_WATER_CAN; 
-        return await new Promise((res) => setTimeout(() => res(amountOfLiquidInWaterCan), 2000))
-};
-
-export const getFlowAmount = async () => {
-    console.log(`CHECKING THE AMOUNT OF FLOWING WATER`);
-    const response: { flow: number }  = await getDataFromArduino(RequestTypes.FLOW);
-    if (DEBUGING) {
-        console.log("DEBUGING: FLOW RES: ", response);
-    }
-    return response.flow;
+        return amountOfLiquidInWaterCan;
 };
 
 export const fillWaterCan = async (potSize) => {
@@ -99,7 +89,19 @@ export const fillWaterCan = async (potSize) => {
 
     while (amountOfLiquidInWaterCanArr[iterations] < neededAmountOfWaterInLiters || diffMins < 5) {
         waterSelanoid.writeSync(0);
+
+        await new Promise((res) => setTimeout(() => res(true), 100));
+        if (!isWaterFlowing()) {
+            throw "SOMETHING'S WRONG (WATER FLOW)! water is not flowing and should"; 
+        }
+
         await new Promise((res) => setTimeout(() => res(waterSelanoid.writeSync(1)), 10000));
+
+        await new Promise((res) => setTimeout(() => res(true), 100));
+        if (isWaterFlowing()) {
+            throw "SOMETHING'S WRONG (WATER FLOW)! water is flowing and should not";
+        }
+
         currentTime = new Date();
         diffMins = Math.round((((currentTime.getTime() - startTime.getTime()) % 86400000) % 3600000) / 60000);
         amountOfLiquidInWaterCanArr.push(await getAmountOfLiquidInWaterCan());
@@ -107,11 +109,11 @@ export const fillWaterCan = async (potSize) => {
 
         if (amountOfLiquidInWaterCanArr[iterations] <= amountOfLiquidInWaterCanArr[iterations - 1]) {
             waterSelanoid.writeSync(1);
-            throw "SOMETHING'S WRONG! (water can not filling up)";
+            throw "SOMETHING'S WRONG (WATER FLOW)! water can not filling up";
         }
     }
-    console.log(`FILLED WATER CAN WITH WATER SUCCESSFULLY`);
 
+    console.log(`FILLED WATER CAN WITH WATER SUCCESSFULLY`);
     return;
 };
 
@@ -127,7 +129,7 @@ export const addNutritions = async (potSize, nitrogen, phosphorus, potassium) =>
     const neededPhosphorus = phosphorus * neededAmountOfWaterInLiters;
     const neededPotassium = potassium * neededAmountOfWaterInLiters;
 
-    nitrogenPump.writeSync(0); waterFlow
+    nitrogenPump.writeSync(0);
     await new Promise((res) => setTimeout(() => res(nitrogenPump.writeSync(1)), neededNitrogen * MS_TO_DOSE_ONE_ML));
 
     phosphorusPump.writeSync(0);
@@ -147,11 +149,10 @@ export const addNutritions = async (potSize, nitrogen, phosphorus, potassium) =>
     stirrer.writeSync(1);
 
     console.log(`ADDED NUTRITIONS SUCCESSFULLY`);
-
     return;
 };
 
 const calcNeededAmountOfWaterInLiters = (potSize) => {
     const litersPerPot = potSize / LITERS_TO_POT_SIZE_RATIO;
-    return litersPerPot < MAX_LITERS_IN_WATER_CAN ? litersPerPot : MAX_LITERS_IN_WATER_CAN;
+    return Math.min(litersPerPot, MAX_LITERS_IN_WATER_CAN);
 };
