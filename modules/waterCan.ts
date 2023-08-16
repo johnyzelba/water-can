@@ -9,7 +9,8 @@ import {
     PHOSPHORUSPUMPPIN,
     POTASSIUMPUMPPIN,
     STIRRERPIN,
-    WATERFLOWPIN
+    WATERFLOWPIN,
+    DEBUGING
 } from '../utils/consts';
 import { Gpio }  from 'onoff';
 import { RequestTypes , getDataFromArduino } from './arduino';
@@ -35,6 +36,9 @@ const getDistance = async () => {
     if (Math.abs(response.distanceA - response.distanceB) > 3) {
         throw "SOMETHING'S WRONG! (delta between distance sensors is to high)";
     }
+    if (DEBUGING) {
+        console.log("DEBUGING: DISTANCES: ", response.distanceA, " | ", response.distanceB);
+    }
     return (response.distanceA + response.distanceB) / 2;
 }
 
@@ -55,6 +59,9 @@ export const validateWaterCan = async () => {
 const isWaterCanInPlace = async () => {
     console.log(`CHECKING IF WATER CAN IS IN PLACE`);
     const response: { success: true } | undefined = await getDataFromArduino(RequestTypes.RFID);
+    if (DEBUGING) {
+        console.log("DEBUGING: RFID RES: ", response);
+    }
     return response?.success;
 };
 
@@ -74,6 +81,9 @@ const getAmountOfLiquidInWaterCan = async (): Promise<number> => {
 export const getFlowAmount = async () => {
     console.log(`CHECKING THE AMOUNT OF FLOWING WATER`);
     const response: { flow: number }  = await getDataFromArduino(RequestTypes.FLOW);
+    if (DEBUGING) {
+        console.log("DEBUGING: FLOW RES: ", response);
+    }
     return response.flow;
 };
 
@@ -88,7 +98,7 @@ export const fillWaterCan = async (potSize) => {
 
     while (amountOfLiquidInWaterCanArr[iterations] < neededAmountOfWaterInLiters || diffMins < 5) {
         waterSelanoid.writeSync(0);
-        await new Promise((res) => setTimeout(() => res(waterSelanoid.writeSync(1)), 5000));
+        await new Promise((res) => setTimeout(() => res(waterSelanoid.writeSync(1)), 10000));
         currentTime = new Date();
         diffMins = Math.round((((currentTime.getTime() - startTime.getTime()) % 86400000) % 3600000) / 60000);
         amountOfLiquidInWaterCanArr.push(await getAmountOfLiquidInWaterCan());
