@@ -14,6 +14,8 @@ The smart water can is a system designed to monitor and automate indoor plants c
 
 The system will monitor your plants and will fill a dedicated water can with the needed amount of water/nutrients, when it starts to dry out. A notification will be sent to the user once the process is complete.
 
+<br />
+
 ## Features and technical info
 <ul>
     <li>
