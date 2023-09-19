@@ -1,9 +1,13 @@
 import dotenv from 'dotenv'
 dotenv.config();
 
+// Env
+export const DEBUGING = !!process.env.DEBUGING;
+export const DB_PATH = process.env.DB_PATH;
+export const TBTOKEN = process.env.TELEGRAM_TOKEN;
+export const TBCHATID = process.env.TELEGRAM_CHAT_ID;
 
 // General
-export const DEBUGING = !!process.env.DEBUGING;
 export const SOIL_MOISTURE_WATERING_THRESHOLD = 15;
 export const MAX_LITERS_IN_WATER_CAN = 2;
 export const MS_TO_DOSE_ONE_ML = 300;
@@ -17,7 +21,3 @@ export const NITROGENPUMPPIN = 24;
 export const PHOSPHORUSPUMPPIN = 25;
 export const POTASSIUMPUMPPIN = 16;
 export const STIRRERPIN = 17;
-
-// Telegram bot
-export const TBTOKEN = process.env.TELEGRAM_TOKEN;
-export const TBCHATID = process.env.TELEGRAM_CHAT_ID;
