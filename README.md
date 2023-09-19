@@ -64,8 +64,6 @@ Run <code>npm i</code> in your cloned repo path.
 
 ## Running the server
 
-In order for the server to run on startup, we will need to inStall pm2 <code>npm install pm2 -g
-</code>.
+In order for the server to run on startup, we will need to inStall pm2 <code>npm install pm2 -g</code>.
 
-Then we will run <code>pm2 run start</code>, <code>pm2 startup
-</code>, <code>pm2 save</code> from the repo's path.
+Then we will run <code>pm2 run start</code>, <code>pm2 startup</code>, <code>pm2 save</code> from the repo's path.
